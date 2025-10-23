@@ -5,7 +5,6 @@
 void myUpdateScene(GLFWwindow*,double);
 void myKeyboardHandler(GLFWwindow*, int, int, int, int);
 void playerControl(double);
-void keepPlayerOnScreen();
 
 bool wKey, aKey, sKey, dKey = false;
 
@@ -50,30 +49,11 @@ int main(void) {
 	// return success :)
 	return 0;
 }
-
 void myUpdateScene(GLFWwindow* window, double tDelta) {
 	//Update Function
 	
 	playerControl(tDelta);
-	keepPlayerOnScreen();
-}
-void keepPlayerOnScreen() {
-	glm::vec2 pos = player->getPosition();
-	float viewWidth = getViewplaneWidth()/2;
-	float viewHeight = getViewplaneHeight()/2;
-
-	if (pos.x > viewWidth) {
-		player->objectRef->position.x = -1.0 * viewWidth;
-	}
-	if (pos.x < -1.0 * viewWidth) {
-		player->objectRef->position.x = viewWidth;
-	}
-	if (pos.y > viewHeight) {
-		player->objectRef->position.y = -1.0 * viewHeight;
-	}
-	if (pos.y < -1.0 * viewHeight) {
-		player->objectRef->position.y = viewHeight;
-	}
+	player->keepOnScreen(getViewplaneWidth() / 2.0f, getViewplaneHeight() / 2.0f);
 }
 void playerControl(double tDelta) {
 	if (aKey) {

@@ -47,3 +47,19 @@ glm::vec2 myGameObject::getForwardVector() {
 glm::vec2 myGameObject::getPosition() {
 	return objectRef->position;
 }
+
+void myGameObject::keepOnScreen(float viewWidth, float viewHeight) {
+	glm::vec2 pos = getPosition();
+	if (pos.x > viewWidth) {
+		objectRef->position.x = -1.0 * viewWidth;
+	}
+	if (pos.x < -1.0 * viewWidth) {
+		objectRef->position.x = viewWidth;
+	}
+	if (pos.y > viewHeight) {
+		objectRef->position.y = -1.0 * viewHeight;
+	}
+	if (pos.y < -1.0 * viewHeight) {
+		objectRef->position.y = viewHeight;
+	}
+}

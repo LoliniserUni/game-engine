@@ -41,4 +41,5 @@ public:
 	void updateVel(double tDelta);
 	glm::vec2 getForwardVector();
 	glm::vec2 getPosition();
+	void keepOnScreen(float, float);
 };
