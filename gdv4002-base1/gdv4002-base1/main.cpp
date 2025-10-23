@@ -1,38 +1,25 @@
 #include "Engine.h"
+#include "myGameObject.h"
 
 // Function prototypes
 void myUpdateScene(GLFWwindow*,double);
 void myKeyboardHandler(GLFWwindow*, int, int, int, int);
 void playerControl(double);
+void keepPlayerOnScreen();
 
 bool wKey, aKey, sKey, dKey = false;
 
 
 const float PI = 3.141593f;
 
-bool isSpinning = false;
-float cRotVel;
-float rotAccel = 30.0f;
-float maxRot = 10.0f;
+float forwardForce = 0.2f;
 
-float cSpeed;
-float maxSpeed = 50.0f;
-float forwardAccel = 15.0f;
-float backwardsAccel = 25.0f;
-float driftLoss = 1.0f * 180/PI;
-
-float newX, newY;
-
-float cVelOrientation;
-
-const float rotSpeed = glm::radians(360.0f);
-
-GameObject2D* player;
+myGameObject* player;
 
 int main(void) {
 
 	// Initialise the engine (create window, setup OpenGL backend)
-	int initResult = engineInit("GDV4002 - Applied Maths for Games", 1024, 1024,100.0f);
+	int initResult = engineInit("GDV4002 - Applied Maths for Games", 1024, 1024,160.0f);
 
 	// If the engine initialisation failed report error and exit
 	if (initResult != 0) {
@@ -47,8 +34,10 @@ int main(void) {
 
 	addObject("player",glm::vec2(10.0f,10.0f),glm::radians(270.0f),glm::vec2(10.0f,10.0f),"Resources\\Textures\\player1_ship.png",TextureProperties::NearestFilterTexture());
 
-	player = getObject("player");
+	myGameObject temp = myGameObject(getObject("player"));
+	player = &temp;
 
+	
 	setKeyboardHandler(myKeyboardHandler);
 	
 	setUpdateFunction(myUpdateScene);
@@ -62,57 +51,45 @@ int main(void) {
 	return 0;
 }
 
-
 void myUpdateScene(GLFWwindow* window, double tDelta) {
 	//Update Function
 	
 	playerControl(tDelta);
-
-	
-
+	keepPlayerOnScreen();
 }
+void keepPlayerOnScreen() {
+	glm::vec2 pos = player->getPosition();
+	float viewWidth = getViewplaneWidth()/2;
+	float viewHeight = getViewplaneHeight()/2;
 
+	if (pos.x > viewWidth) {
+		player->objectRef->position.x = -1.0 * viewWidth;
+	}
+	if (pos.x < -1.0 * viewWidth) {
+		player->objectRef->position.x = viewWidth;
+	}
+	if (pos.y > viewHeight) {
+		player->objectRef->position.y = -1.0 * viewHeight;
+	}
+	if (pos.y < -1.0 * viewHeight) {
+		player->objectRef->position.y = viewHeight;
+	}
+}
 void playerControl(double tDelta) {
 	if (aKey) {
-		/*if (cRotVel <= maxRot) {
-
-			cRotVel += tDelta * rotAccel;
-		}*/
-
-		cRotVel = maxRot;
-
-		player->orientation = player->orientation + (cRotVel * tDelta);
+		player->turnLeft(tDelta);
 	}
 	if (dKey) {
-		/*if (cRotVel >= -1.0 * maxRot) {
-
-			cRotVel -= tDelta * rotAccel;
-		}*/
-
-		cRotVel = maxRot * -1.0;
-
-		player->orientation = player->orientation + (cRotVel * tDelta);
+		player->turnRight(tDelta);
 	}
 	if (wKey) {
-		if (cSpeed < maxSpeed) {
-			cSpeed += forwardAccel * tDelta;
-		}
-
-		cVelOrientation = player->orientation;
-		
+		player->addVelocity(player->getForwardVector(), forwardForce);
 	}
 	if (sKey) {
-		if (cSpeed > 0.00001) {
-			cSpeed -= backwardsAccel * tDelta;
-		}
+		player->addVelocity(player->getForwardVector(), forwardForce*-1.0);
 	}
 
-	newX = (cSpeed * tDelta * cos(cVelOrientation)) + player->position.x;
-	newY = (cSpeed * tDelta * sin(cVelOrientation)) + player->position.y;
-
-	player->position = glm::vec2(newX, newY);
-
-	//player->orientation = player->orientation + (cRotVel * tDelta);
+	player->updateVel(tDelta);
 }
 
 void myKeyboardHandler(GLFWwindow* window, int key, int scancode, int action, int mods)
