@@ -3,6 +3,13 @@
 GameObject2D::GameObject2D() {
 }
 
+/*
+Create new objects, Parms:
+
+vec2 initPosition
+vec2 initSize
+GLunit initTextureID
+*/
 GameObject2D::GameObject2D(glm::vec2 initPosition, float initOrientation, glm::vec2 initSize, GLuint initTextureID) {
 
 	position = initPosition;
