@@ -5,13 +5,14 @@
 void myUpdateScene(GLFWwindow*,double);
 void myKeyboardHandler(GLFWwindow*, int, int, int, int);
 void playerControl(double);
+void shoot(double);
 
-bool wKey, aKey, sKey, dKey = false;
+bool wKey, aKey, sKey, dKey,spaceKey = false;
 
 
 const float PI = 3.141593f;
 
-float forwardForce = 0.2f;
+float forwardForce = 200.0f;
 
 myGameObject* player;
 
@@ -63,13 +64,23 @@ void playerControl(double tDelta) {
 		player->turnRight(tDelta);
 	}
 	if (wKey) {
-		player->addVelocity(player->getForwardVector(), forwardForce);
+		player->addVelocity(player->getForwardVector(), forwardForce, tDelta);
 	}
 	if (sKey) {
-		player->addVelocity(player->getForwardVector(), forwardForce*-1.0);
+		player->addVelocity(player->getForwardVector(), forwardForce*-1.0, tDelta);
+	}if (spaceKey) {
+		shoot(tDelta);
 	}
 
 	player->updateVel(tDelta);
+}
+
+void shoot(double tDelta) {
+	glm::vec2 bulletPos = player->getPosition() + (player->getForwardVector() * 5.0f);
+	float bulletOrient = player->objectRef->orientation;
+
+	addObject("bullet", bulletPos, bulletOrient, glm::vec2(2.0f, 2.0f), "Resources\\Textures\\bullet.png", TextureProperties::NearestFilterTexture());
+
 }
 
 void myKeyboardHandler(GLFWwindow* window, int key, int scancode, int action, int mods)
@@ -96,6 +107,9 @@ void myKeyboardHandler(GLFWwindow* window, int key, int scancode, int action, in
 		case GLFW_KEY_D:
 			dKey = true;
 			break;
+		case GLFW_KEY_SPACE:
+			spaceKey = true;
+			break;
 
 		default:
 		{
@@ -119,6 +133,9 @@ void myKeyboardHandler(GLFWwindow* window, int key, int scancode, int action, in
 			break;
 		case GLFW_KEY_D:
 			dKey = false;
+			break;
+		case GLFW_KEY_SPACE:
+			spaceKey = false;
 			break;
 
 		default:

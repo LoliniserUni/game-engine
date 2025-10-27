@@ -21,15 +21,13 @@ void myGameObject::turnRight(double tDelta) {
 
 	objectRef->orientation = objectRef->orientation + (cRotVel * tDelta);
 }
-void myGameObject::addVelocity(glm::vec2 dir, float mag) {
-	glm::vec2 accel = dir * mag;
+void myGameObject::addVelocity(glm::vec2 dir, float mag, double tDelta) {
+	glm::vec2 accel = dir * (float) tDelta * mag;
 	velocity += accel;
 
 	if (velocity.length() > maxSpeed) {
 		velocity = glm::normalize(velocity) * maxSpeed;
 	}
-}
-void myGameObject::shoot(double tDelta) {
 }
 void myGameObject::updateVel(double tDelta) {
 	objectRef->position += velocity * (float)tDelta;

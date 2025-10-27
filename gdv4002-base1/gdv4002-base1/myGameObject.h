@@ -36,7 +36,7 @@ public:
 	myGameObject(GameObject2D* object);
 	void turnLeft(double tDelta);
 	void turnRight(double tDelta);
-	void addVelocity(glm::vec2 dir, float mag);
+	void addVelocity(glm::vec2 dir, float mag, double tDelta);
 	void shoot(double tDelta);
 	void updateVel(double tDelta);
 	glm::vec2 getForwardVector();
