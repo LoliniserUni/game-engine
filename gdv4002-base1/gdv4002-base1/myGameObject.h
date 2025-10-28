@@ -19,7 +19,7 @@ public:
 	float maxRot = 10.0f;
 
 	float cSpeed;
-	float maxSpeed = 50.0f;
+	float maxSpeed = 200.0f;
 	float forwardAccel = 15.0f;
 	float backwardsAccel = 25.0f;
 	float driftLoss = 1.0f * 180 / PI;

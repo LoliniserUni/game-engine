@@ -5,11 +5,7 @@ myGameObject::myGameObject() {
 }
 myGameObject::myGameObject(GameObject2D* object) {
 	objectRef = object;
-	cSpeed = 0.0f;
-	cRotVel = 0.0f;
-	maxSpeed = 2.0f;
-	prevDir = 0.0f;
-	cDir = 0.0f;
+	cDir = object->orientation;
 }
 void myGameObject::turnLeft(double tDelta) {
 	cRotVel = maxRot;
@@ -25,11 +21,15 @@ void myGameObject::addVelocity(glm::vec2 dir, float mag, double tDelta) {
 	glm::vec2 accel = dir * (float) tDelta * mag;
 	velocity += accel;
 
-	if (velocity.length() > maxSpeed) {
-		velocity = glm::normalize(velocity) * maxSpeed;
+	if (glm::length(velocity) > maxSpeed) {
+		velocity = glm::normalize(velocity);
+		velocity *= maxSpeed;
+		
 	}
 }
 void myGameObject::updateVel(double tDelta) {
+	
+	
 	objectRef->position += velocity * (float)tDelta;
 
 }
@@ -48,16 +48,44 @@ glm::vec2 myGameObject::getPosition() {
 
 void myGameObject::keepOnScreen(float viewWidth, float viewHeight) {
 	glm::vec2 pos = getPosition();
+
+	viewHeight += 5;
+	viewWidth += 5;
+	/*
 	if (pos.x > viewWidth) {
 		objectRef->position.x = -1.0 * viewWidth;
 	}
-	if (pos.x < -1.0 * viewWidth) {
-		objectRef->position.x = viewWidth;
+	else {
+		if (pos.x < -1.0 * viewWidth) {
+			objectRef->position.x = viewWidth;
+		}
+		else {
+			// do nothing.
+		}
 	}
 	if (pos.y > viewHeight) {
 		objectRef->position.y = -1.0 * viewHeight;
 	}
-	if (pos.y < -1.0 * viewHeight) {
-		objectRef->position.y = viewHeight;
+	else {
+		if (pos.y < -1.0 * viewHeight) {
+			objectRef->position.y = viewHeight;
+		}
+		else {
+			//do nothing.
+		}
+	}
+	*/
+
+	if (pos.x > -viewWidth && pos.x < viewWidth) {
+		//do nothing.
+	}
+	else {
+		objectRef->position.x *= -1;
+	}
+	if (pos.y > -viewHeight && pos.y < viewHeight) {
+		//do nothing.
+	}
+	else {
+		objectRef->position.y *= -1;
 	}
 }

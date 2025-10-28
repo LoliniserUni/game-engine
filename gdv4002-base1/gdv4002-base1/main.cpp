@@ -6,13 +6,19 @@ void myUpdateScene(GLFWwindow*,double);
 void myKeyboardHandler(GLFWwindow*, int, int, int, int);
 void playerControl(double);
 void shoot(double);
+void updateBullet(double);
 
+float shootCooldownLen = 0.5f;
+float shootCooldown = 0;
 bool wKey, aKey, sKey, dKey,spaceKey = false;
+int bulletNum = 0;
 
-
+float bulletMag = 500.0;
 const float PI = 3.141593f;
 
 float forwardForce = 200.0f;
+
+float width, height;
 
 myGameObject* player;
 
@@ -37,7 +43,8 @@ int main(void) {
 	myGameObject temp = myGameObject(getObject("player"));
 	player = &temp;
 
-	
+	width = getViewplaneWidth();
+	height = getViewplaneHeight();
 	setKeyboardHandler(myKeyboardHandler);
 	
 	setUpdateFunction(myUpdateScene);
@@ -55,6 +62,7 @@ void myUpdateScene(GLFWwindow* window, double tDelta) {
 	
 	playerControl(tDelta);
 	player->keepOnScreen(getViewplaneWidth() / 2.0f, getViewplaneHeight() / 2.0f);
+	updateBullet(tDelta);
 }
 void playerControl(double tDelta) {
 	if (aKey) {
@@ -75,12 +83,24 @@ void playerControl(double tDelta) {
 	player->updateVel(tDelta);
 }
 
+void updateBullet(double tDelta) {
+	for (int x = 1; x < bulletNum; x++) {
+		GameObject2D* bullet = getObject("bullet" + bulletNum);
+
+		myGameObject bulletObject = myGameObject(bullet);
+		bulletObject.addVelocity(bulletObject.getForwardVector(), bulletMag, tDelta);
+		bulletObject.updateVel(tDelta);
+	}
+}
+
 void shoot(double tDelta) {
 	glm::vec2 bulletPos = player->getPosition() + (player->getForwardVector() * 5.0f);
 	float bulletOrient = player->objectRef->orientation;
 
-	addObject("bullet", bulletPos, bulletOrient, glm::vec2(2.0f, 2.0f), "Resources\\Textures\\bullet.png", TextureProperties::NearestFilterTexture());
+	bulletNum++;
 
+	addObject("bullet"+bulletNum, bulletPos, bulletOrient, glm::vec2(2.0f, 2.0f), "Resources\\Textures\\bullet.png", TextureProperties::NearestFilterTexture());
+	
 }
 
 void myKeyboardHandler(GLFWwindow* window, int key, int scancode, int action, int mods)
