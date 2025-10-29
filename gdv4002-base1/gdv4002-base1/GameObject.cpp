@@ -1,59 +1,59 @@
-#include "myGameObject.h"
+#include "GameObject.h"
 
 
-myGameObject::myGameObject() {
+GameObject::GameObject() {
 }
 
 
-myGameObject::myGameObject(glm::vec2 pos, float ori, int textID, glm::vec2 siz) {
+GameObject::GameObject(glm::vec2 pos, float ori, int textID, glm::vec2 siz) {
 	position = pos;
 	orientation = ori;
 	size = siz;
 	textureID = textID;
 }
 
-myGameObject::myGameObject(GameObject2D* object) {
+GameObject::GameObject(GameObject2D* object) {
 	position = object->position;
 	orientation = object->orientation;
 	size = object->size;
 	textureID = object->textureID;
 }
-void myGameObject::turnLeft(double tDelta) {
+void GameObject::turnLeft(double tDelta) {
 
-	orientation = orientation + (maxRot * tDelta);
+	orientation = orientation + (rotSpeed * tDelta);
 }
-void myGameObject::turnRight(double tDelta) {
+void GameObject::turnRight(double tDelta) {
 
-	orientation = orientation + (-maxRot * tDelta);
+	orientation = orientation + (-rotSpeed * tDelta);
 }
-void myGameObject::addVelocity(glm::vec2 dir, float mag, double tDelta) {
-	glm::vec2 accel = dir * (float) tDelta * mag;
+void GameObject::addVelocity(glm::vec2 dir, float mag, double tDelta) {
+	glm::vec2 accel = dir * (float)tDelta * mag;
 	velocity += accel;
 
 	if (glm::length(velocity) > maxSpeed) {
 		velocity = glm::normalize(velocity);
 		velocity *= maxSpeed;
-		
+
 	}
 }
 
-void myGameObject::setVelocity(glm::vec2 dir, float speed) {
+void GameObject::setVelocity(glm::vec2 dir, float speed) {
 	velocity = dir * speed;
 }
-void myGameObject::updateVel(double tDelta) {
-	
-	
+void GameObject::updateVel(double tDelta) {
+
+
 	position += velocity * (float)tDelta;
 
 }
 
-void myGameObject::makeNew(myGameObject object) {
+void GameObject::makeNew(GameObject object) {
 	position = object.position;
 	orientation = object.orientation;
 	size = object.size;
 	textureID = object.textureID;
 }
-glm::vec2 myGameObject::getForwardVector() {
+glm::vec2 GameObject::getForwardVector() {
 	float xComp = cos(orientation);
 	float yComp = sin(orientation);
 	glm::vec2 forwardVec = glm::vec2(xComp, yComp);
@@ -61,21 +61,11 @@ glm::vec2 myGameObject::getForwardVector() {
 	return forwardVec;
 }
 
-glm::vec2 myGameObject::getPosition() {
+glm::vec2 GameObject::getPosition() {
 	return position;
 }
 
-myGameObject myGameObject::shoot(double tDelta, float speed, int texture, glm::vec2 size) {
-	glm::vec2 pos = position;
-	float ori = orientation;
-	
-	myGameObject bullet = myGameObject(pos, ori, texture, size);
-	bullet.setVelocity(bullet.getForwardVector(), speed);
-
-	return bullet;
-}
-
-void myGameObject::keepOnScreen(float viewWidth, float viewHeight) {
+void GameObject::keepOnScreen(float viewWidth, float viewHeight) {
 	glm::vec2 pos = getPosition();
 
 	viewHeight += 5;
