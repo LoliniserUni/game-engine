@@ -22,6 +22,8 @@ void GameObject2D::render() {
 
 	// Render objects here...
 
+	
+
 	glPushMatrix();
 	
 	glTranslatef(position.x, position.y, 0.0f);
@@ -32,6 +34,9 @@ void GameObject2D::render() {
 
 		glEnable(GL_TEXTURE_2D);
 		glBindTexture(GL_TEXTURE_2D, textureID);
+		//We changed this for transparent texture backgrounds
+		glEnable(GL_BLEND);
+		glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 	}
 
 	glBegin(GL_TRIANGLE_STRIP);
@@ -55,6 +60,7 @@ void GameObject2D::render() {
 	if (textureID > 0) {
 
 		glDisable(GL_TEXTURE_2D);
+		glDisable(GL_BLEND);
 	}
 
 	glPopMatrix();

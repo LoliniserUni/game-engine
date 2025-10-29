@@ -3,19 +3,28 @@
 
 myGameObject::myGameObject() {
 }
+
+
+myGameObject::myGameObject(glm::vec2 pos, float ori, int textID, glm::vec2 siz) {
+	position = pos;
+	orientation = ori;
+	size = siz;
+	textureID = textID;
+}
+
 myGameObject::myGameObject(GameObject2D* object) {
-	objectRef = object;
-	cDir = object->orientation;
+	position = object->position;
+	orientation = object->orientation;
+	size = object->size;
+	textureID = object->textureID;
 }
 void myGameObject::turnLeft(double tDelta) {
-	cRotVel = maxRot;
 
-	objectRef->orientation = objectRef->orientation + (cRotVel * tDelta);
+	orientation = orientation + (maxRot * tDelta);
 }
 void myGameObject::turnRight(double tDelta) {
-	cRotVel = maxRot * -1.0;
 
-	objectRef->orientation = objectRef->orientation + (cRotVel * tDelta);
+	orientation = orientation + (-maxRot * tDelta);
 }
 void myGameObject::addVelocity(glm::vec2 dir, float mag, double tDelta) {
 	glm::vec2 accel = dir * (float) tDelta * mag;
@@ -27,23 +36,43 @@ void myGameObject::addVelocity(glm::vec2 dir, float mag, double tDelta) {
 		
 	}
 }
+
+void myGameObject::setVelocity(glm::vec2 dir, float speed) {
+	velocity = dir * speed;
+}
 void myGameObject::updateVel(double tDelta) {
 	
 	
-	objectRef->position += velocity * (float)tDelta;
+	position += velocity * (float)tDelta;
 
 }
 
+void myGameObject::makeNew(myGameObject object) {
+	position = object.position;
+	orientation = object.orientation;
+	size = object.size;
+	textureID = object.textureID;
+}
 glm::vec2 myGameObject::getForwardVector() {
-	float xComp = cos(objectRef->orientation);
-	float yComp = sin(objectRef->orientation);
+	float xComp = cos(orientation);
+	float yComp = sin(orientation);
 	glm::vec2 forwardVec = glm::vec2(xComp, yComp);
 
 	return forwardVec;
 }
 
 glm::vec2 myGameObject::getPosition() {
-	return objectRef->position;
+	return position;
+}
+
+myGameObject myGameObject::shoot(double tDelta, float speed, int texture, glm::vec2 size) {
+	glm::vec2 pos = position;
+	float ori = orientation;
+	
+	myGameObject bullet = myGameObject(pos, ori, texture, size);
+	bullet.setVelocity(bullet.getForwardVector(), speed);
+
+	return bullet;
 }
 
 void myGameObject::keepOnScreen(float viewWidth, float viewHeight) {
@@ -80,12 +109,12 @@ void myGameObject::keepOnScreen(float viewWidth, float viewHeight) {
 		//do nothing.
 	}
 	else {
-		objectRef->position.x *= -1;
+		position.x *= -1;
 	}
 	if (pos.y > -viewHeight && pos.y < viewHeight) {
 		//do nothing.
 	}
 	else {
-		objectRef->position.y *= -1;
+		position.y *= -1;
 	}
 }
