@@ -12,11 +12,16 @@ void playerControl(double);
 void shoot(double);
 void updateBullets(double);
 void deleteBulletFromArray(int);
-void spawnMedAstroid(double);
-void deleteMedAstFromArray(int index);
+void spawnMedAstroid(double, glm::vec2 pos);
+//void deleteMedAstFromArray(int index);
 void updateAstroids(double tDelta);
-void deleteFromArray(GameObject* array, int index, int* arrSize);
-void spawnSmallAstroid(double tDelta);
+//void deleteFromArray(Bullet* array, int index, int* arrSize);
+void deleteFromAstroidArray(Astroid* array, int index, int* arrSize);
+void spawnSmallAstroid(double tDelta,glm::vec2 pos);
+void spawnBigAstroid(double tDelta, glm::vec2 pos);
+void spawnLevel();
+void checkCompletion();
+void checkPlayerHB();
 
 bool wKey, aKey, sKey, dKey,spaceKey = false;
 int bulletNum = 0;
@@ -41,25 +46,28 @@ int bulletIndex = 0;
 float shotTimer = 1.0f;
 float shotDelay = 0.1f;
 
-Astroid astroid = new Astroid();
-
 Astroid* bigAstroidArr = new Astroid[10];
 int bigAstroidIndex = 0;
 
-Astroid* medAstroidArr = new Astroid[10];
+Astroid* medAstroidArr = new Astroid[50];
 int medAstroidIndex = 0;
 
-Astroid* smallAstroidArr = new Astroid[10];
+Astroid* smallAstroidArr = new Astroid[100];
 int smallAstroidIndex = 0;
 
-bool astroidExists = true;
+int currentLevel = 1;
+bool levelInProgress = false;
+
+const int baPerLevel = 1;
+const int maPerLevel = 1;
+const int saPerLevel = 2;
 
 
 float bigAstroidSpeed = 30.0f;
 float medAstroidSpeed = 60.0f;
 float smallAstroidSpeed = 90.0f;
 
-glm::vec4 bg = glm::vec4(1.0f, 1.0f, 1.0f, 1.0f);
+glm::vec4 bg = glm::vec4(1.0f, 0.0f, 0.0f, 1.0f);
 
 int main(void) {
 
@@ -82,16 +90,9 @@ int main(void) {
 	bulletTexture = loadTexture("Resources\\Textures\\bullet.png", TextureProperties::NearestFilterTexture());
 	astroidBigTexture = loadTexture("Resources\\Textures\\asteroid.png", TextureProperties::NearestFilterTexture());
 	astroidSmallTexture = loadTexture("Resources\\Textures\\asteroid.png", TextureProperties::NearestFilterTexture());
-
-	astroid.makeNew(Astroid(glm::vec2(2.0f,5.0f), 0.0f, astroidBigTexture, glm::vec2(30,30), glm::radians(100.0f), 0));
-	astroid.setVelocity(astroid.getForwardVector(), bigAstroidSpeed);
-
 	
 	player = new Player(glm::vec2(0, 0), 0, playerTexture, glm::vec2(10,10));
 	addObject("Player", player);
-
-	//addObject("Astroid", &astroid);
-
 
 	width = getViewplaneWidth();
 	height = getViewplaneHeight();
@@ -110,26 +111,119 @@ int main(void) {
 }
 void myUpdateScene(GLFWwindow* window, double tDelta) {
 	//Update Function
-	updateAstroids(tDelta);
 
-	
+	spawnLevel();
+	checkCompletion();
 
 	playerControl(tDelta);
 	player->keepOnScreen(getViewplaneWidth() / 2.0f, getViewplaneHeight() / 2.0f, 5);
-
+	
+	checkPlayerHB();
+	updateAstroids(tDelta);
 	updateBullets(tDelta);
 }
 
+void checkPlayerHB() {
+	bool hit = false;
+	
+	glm::vec2 playerPos = player->getPosition();
+
+	for (int ba = 0; ba < bigAstroidIndex; ba++) {
+		if (bigAstroidArr[ba].checkColl(player)) {
+			hit = true;
+		}
+	}
+
+	for (int ma = 0; ma < medAstroidIndex; ma++) {
+		if (medAstroidArr[ma].checkColl(player)) {
+			hit = true;
+		}
+	}
+
+	for (int sa = 0; sa < smallAstroidIndex; sa++) {
+		if (smallAstroidArr[sa].checkColl(player)) {
+			hit = true;
+		}
+	}
+
+	if (hit) {
+		setBackgroundColour(bg);
+	}
+
+}
+
+void checkCompletion() {
+	if (bigAstroidIndex + medAstroidIndex + smallAstroidIndex == 0) {
+		levelInProgress = false;
+		currentLevel++;
+	}
+}
+
+void spawnLevel() {
+	if (levelInProgress) {
+		//do nothing
+		return;
+	} else {
+		levelInProgress = true;
+		for (int ba = 0; ba < baPerLevel * currentLevel; ba++) {
+			float xPos = 0;
+			float yPos = 0;
+			if (rand() % 2 < 1) {
+				xPos = rand() % (int)width - width / 2.0f;
+				yPos = height / 2.0f + 10.0f;
+			}
+			else {
+				yPos = rand() % (int)height - height / 2.0f;
+				xPos = width / 2.0f + 10.0f;
+			}
+			spawnBigAstroid(0.0f, glm::vec2(xPos, yPos));
+		}
+
+		for (int ma = 0; ma < maPerLevel * currentLevel; ma++) {
+			float xPos = 0;
+			float yPos = 0;
+			if (rand() % 2 < 1) {
+				xPos = rand() % (int)width - width / 2.0f;
+				yPos = height / 2.0f + 10.0f;
+			}
+			else {
+				yPos = rand() % (int)height - height / 2.0f;
+				xPos = width / 2.0f + 10.0f;
+			}
+			spawnMedAstroid(0.0f, glm::vec2(xPos, yPos));
+		}
+
+		for (int sa = 0; sa < saPerLevel * currentLevel; sa++) {
+			float xPos = 0;
+			float yPos = 0;
+			if (rand() % 2 < 1) {
+				xPos = rand() % (int)width - width / 2.0f;
+				yPos = height / 2.0f + 10.0f;
+			}
+			else {
+				yPos = rand() % (int)height - height / 2.0f;
+				xPos = width / 2.0f + 10.0f;
+			}
+			spawnSmallAstroid(0.0f, glm::vec2(xPos, yPos));
+		}
+	}
+}
+
 void updateAstroids(double tDelta) {
-	if (astroidExists) {
-		astroid.updateVel(tDelta);
-		astroid.keepOnScreen(getViewplaneWidth() / 2.0f, getViewplaneHeight() / 2.0f, 15);
+	for (int ba = 0; ba < bigAstroidIndex; ba++) {
+		bigAstroidArr[ba].updateVel(tDelta);
+		bigAstroidArr[ba].keepOnScreen(getViewplaneWidth() / 2.0f, getViewplaneHeight() / 2.0f, bigAstroidArr[ba].size.x/2.0f);
 	}
 	
 
 	for (int ma = 0; ma < medAstroidIndex; ma++) {
 		medAstroidArr[ma].updateVel(tDelta);
-		medAstroidArr[ma].keepOnScreen(getViewplaneWidth() / 2.0f, getViewplaneHeight() / 2.0f, 15);
+		medAstroidArr[ma].keepOnScreen(getViewplaneWidth() / 2.0f, getViewplaneHeight() / 2.0f, medAstroidArr[ma].size.x / 2.0f);
+	}
+
+	for (int sa = 0; sa < smallAstroidIndex; sa++) {
+		smallAstroidArr[sa].updateVel(tDelta);
+		smallAstroidArr[sa].keepOnScreen(getViewplaneWidth() / 2.0f, getViewplaneHeight() / 2.0f, smallAstroidArr[sa].size.x / 2.0f);
 	}
 }
 void playerControl(double tDelta) {
@@ -168,80 +262,92 @@ void updateBullets(double tDelta) {
 			//do nothing
 		}
 		else {
-			printf("Pre Size: %d\n", bulletIndex);
-			deleteFromArray(bullet, i, &bulletIndex);
-			//deleteBulletFromArray(i);
+			//deleteFromArray(bullet, i, &bulletIndex);
+			deleteBulletFromArray(i);
 
 		}
-		/*if (astroidExists) {
-			float bx = bullet[i].getPosition().x;
-			float by = bullet[i].getPosition().y;
 
-			float ax = astroid.getPosition().x;
-			float ay = astroid.getPosition().y;
-
-			float xDif = abs(bx - ax);
-			float yDif = abs(bx - ax);
-
-			if (xDif < astroid.size.x / 2.0f && yDif < astroid.size.y / 2.0f) {
-				astroid.makeNew(new Astroid());
-				spawnMedAstroid(tDelta);
-				spawnMedAstroid(tDelta);
-
+		for (int ba = 0; ba < bigAstroidIndex; ba++) {
+			if (bigAstroidArr[ba].checkColl(bullet[i])) {
 				deleteBulletFromArray(i);
-				astroidExists = false;
+				if (bigAstroidArr[ba].addHit()) {
+					spawnMedAstroid(tDelta, bigAstroidArr[ba].position);
+					spawnMedAstroid(tDelta, bigAstroidArr[ba].position);
+
+					bigAstroidArr[ba].makeNew(new Astroid());
+					bigAstroidArr[ba].position = glm::vec2(10000.0f, 10000.0f);
+
+					deleteFromAstroidArray(bigAstroidArr, ba, &bigAstroidIndex);
+				}
 			}
 		}
 
 		for (int ma = 0; ma < medAstroidIndex; ma++) {
-			printf("%d", ma);
-			float bx = bullet[i].getPosition().x;
-			float by = bullet[i].getPosition().y;
-
-
-			float ax = medAstroidArr[ma].getPosition().x;
-			float ay = medAstroidArr[ma].getPosition().y;
-
-			float xDif = abs(bx - ax);
-			float yDif = abs(bx - ax);
-
-			if (xDif < medAstroidArr[ma].size.x / 2.0f && yDif < medAstroidArr[ma].size.y / 2.0f) {
-				medAstroidArr[ma].makeNew(new Astroid());
-
-				printf("%Delete %d", ma);
-
+			if (medAstroidArr[ma].checkColl(bullet[i])) {
 				deleteBulletFromArray(i);
-				deleteMedAstFromArray(ma);
+				if (medAstroidArr[ma].addHit()) {
+					spawnSmallAstroid(tDelta, medAstroidArr[ma].position);
+					spawnSmallAstroid(tDelta, medAstroidArr[ma].position);
+					spawnSmallAstroid(tDelta, medAstroidArr[ma].position);
 
-				spawnSmallAstroid(tDelta);
-				spawnSmallAstroid(tDelta);
+					medAstroidArr[ma].makeNew(new Astroid());
+					medAstroidArr[ma].position = glm::vec2(10000.0f, 10000.0f);
+
+					deleteFromAstroidArray(medAstroidArr, ma, &medAstroidIndex);
+				}
 			}
-		}*/
+		}
+
+		for (int sa = 0; sa < smallAstroidIndex; sa++) {
+			if (smallAstroidArr[sa].checkColl(bullet[i])) {
+				deleteBulletFromArray(i);
+				if (smallAstroidArr[sa].addHit()) {
+					smallAstroidArr[sa].makeNew(new Astroid());
+
+					smallAstroidArr[sa].position = glm::vec2(10000.0f, 10000.0f);
+
+					deleteFromAstroidArray(smallAstroidArr, sa, &smallAstroidIndex);
+				}
+			}
+		}
 	}
 }
 
-void spawnMedAstroid(double tDelta) {
+void spawnBigAstroid(double tDelta, glm::vec2 pos) {
 	float width = getViewplaneWidth();
 	float height = getViewplaneHeight();
 
-	float x = 0;
-	float y = 0;
+	float ori = glm::radians(rand() % 360 * 1.0f);
+	float rotSpeed = rand() % 50 + 70 * 1.0f;
 
 	if (rand() % 2 < 1) {
-		x = (rand() % (int) width) - width / 2;
-		y = height / 2;
+		rotSpeed *= -1.0f;
 	}
-	else {
-		y = (rand() % (int)height) - height / 2;
-		x = width / 2;
-	}
+
+	int size = rand() % 5 + 28;
+
+	bigAstroidArr[bigAstroidIndex].makeNew(Astroid(pos, ori, astroidBigTexture, glm::vec2(size, size), glm::radians(rotSpeed), 0));
+	addObject("medAstroid", &bigAstroidArr[bigAstroidIndex]);
+
+	bigAstroidArr[bigAstroidIndex].setVelocity(bigAstroidArr[bigAstroidIndex].getForwardVector(), bigAstroidSpeed);
+
+	bigAstroidIndex++;
+}
+
+void spawnMedAstroid(double tDelta, glm::vec2 pos) {
+	float width = getViewplaneWidth();
+	float height = getViewplaneHeight();
 
 	float ori = glm::radians(rand() % 360 * 1.0f);
 	float rotSpeed = rand() % 50 + 100 * 1.0f;
 
-	int size = rand()%3+14;
+	if (rand() % 2 < 1) {
+		rotSpeed *= -1.0f;
+	}
 
-	medAstroidArr[medAstroidIndex].makeNew(Astroid(glm::vec2(x, y), ori, astroidBigTexture, glm::vec2(size, size), glm::radians(rotSpeed), 1));
+	int size = rand()%5+18;
+
+	medAstroidArr[medAstroidIndex].makeNew(Astroid(pos, ori, astroidBigTexture, glm::vec2(size, size), glm::radians(rotSpeed), 1));
 	addObject("medAstroid", &medAstroidArr[medAstroidIndex]);
 
 	medAstroidArr[medAstroidIndex].setVelocity(medAstroidArr[medAstroidIndex].getForwardVector(), medAstroidSpeed);
@@ -249,44 +355,36 @@ void spawnMedAstroid(double tDelta) {
 	medAstroidIndex++;
 }
 
-void spawnSmallAstroid(double tDelta) {
+void spawnSmallAstroid(double tDeltam, glm::vec2 pos) {
 	float width = getViewplaneWidth();
 	float height = getViewplaneHeight();
-
-	float x = 0;
-	float y = 0;
-
-	if (rand() % 2 < 1) {
-		x = (rand() % (int)width) - width / 2;
-		y = height / 2;
-	}
-	else {
-		y = (rand() % (int)height) - height / 2;
-		x = width / 2;
-	}
 
 	float ori = glm::radians(rand() % 360 * 1.0f);
 	float rotSpeed = rand() % 50 + 140 * 1.0f;
 
-	int size = rand() % 3 + 9;
+	if (rand() % 2 < 1) {
+		rotSpeed *= -1.0f;
+	}
 
-	smallAstroidArr[smallAstroidIndex].makeNew(Astroid(glm::vec2(x, y), ori, astroidBigTexture, glm::vec2(size, size), glm::radians(rotSpeed), 1));
-	addObject("medAstroid", &medAstroidArr[smallAstroidIndex]);
+	int size = rand() % 5 + 8;
+
+	smallAstroidArr[smallAstroidIndex].makeNew(Astroid(pos, ori, astroidBigTexture, glm::vec2(size, size), glm::radians(rotSpeed), 2));
+	addObject("smallAstroid", &smallAstroidArr[smallAstroidIndex]);
 
 	smallAstroidArr[smallAstroidIndex].setVelocity(smallAstroidArr[smallAstroidIndex].getForwardVector(), smallAstroidSpeed);
 
 	smallAstroidIndex++;
 }
 
-void deleteFromArray(GameObject* array, int index, int* arrSize) {
+/*void deleteFromArray(Bullet* array, int index, int* arrSize) {
 
     for (int i = index; i < (*arrSize) - 1; i++) {
 		array[i].makeNew(array[i + 1]);
 	}
 	(*arrSize)--;
-	array[*arrSize].makeNew(GameObject());
+	array[*arrSize].makeNew(Bullet());
 	array[*arrSize].position = glm::vec2(10000.0f, 10000.0f);
-}
+}*/
 
 void deleteBulletFromArray(int index) {
 	for (int i = index; i < bulletIndex-1; i++) {
@@ -297,7 +395,18 @@ void deleteBulletFromArray(int index) {
 	bullet[bulletIndex].position = glm::vec2(10000.0f, 10000.0f);
 }
 
-void deleteMedAstFromArray(int index) {
+void deleteFromAstroidArray(Astroid* array, int index, int* arrSize) {
+
+	for (int i = index; i < (*arrSize) - 1; i++) {
+		array[i].makeNew(array[i + 1]);
+	}
+	(*arrSize)--;
+	array[*arrSize].makeNew(Astroid());
+	array[*arrSize].position = glm::vec2(10000.0f, 10000.0f);
+}
+
+
+/*void deleteMedAstFromArray(int index) {
 	for (int i = index; i < medAstroidIndex; i++) {
 		medAstroidArr[i].makeNew(medAstroidArr[i + 1]);
 	}
@@ -315,7 +424,9 @@ void deleteSmallAstFromArray(int index) {
 	medAstroidArr[smallAstroidIndex].makeNew(Astroid());
 	medAstroidArr[smallAstroidIndex].position = glm::vec2(10000.0f, 10000.0f);
 
-}
+}*/
+
+
 void shoot(double tDelta) {
 	bullet[bulletIndex].makeNew(player->shoot(tDelta, bulletMag, bulletTexture, BulletSize));
 	bullet[bulletIndex].setVelocity(bullet[bulletIndex].getForwardVector(), bulletMag);

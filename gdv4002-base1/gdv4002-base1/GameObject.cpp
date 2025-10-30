@@ -38,6 +38,18 @@ void GameObject::addVelocity(glm::vec2 dir, float mag, double tDelta) {
 	}
 }
 
+bool GameObject::checkColl(GameObject object) {
+	float bx = object.getPosition().x;
+	float by = object.getPosition().y;
+
+	float ax = getPosition().x;
+	float ay = getPosition().y;
+
+	float xDif = abs(bx - ax);
+	float yDif = abs(by - ay);
+
+	return (xDif < size.x / 2.0f && yDif < size.y / 2.0f);
+}
 void GameObject::setVelocity(glm::vec2 dir, float speed) {
 	velocity = dir * speed;
 }
@@ -71,41 +83,40 @@ void GameObject::keepOnScreen(float viewWidth, float viewHeight, float Buffer) {
 
 	viewHeight += Buffer;
 	viewWidth += Buffer;
-	/*
+	
 	if (pos.x > viewWidth) {
-		objectRef->position.x = -1.0 * viewWidth;
+		position.x = -viewWidth;
 	}
 	else {
-		if (pos.x < -1.0 * viewWidth) {
-			objectRef->position.x = viewWidth;
+		if (pos.x < -viewWidth) {
+			position.x = viewWidth;
 		}
 		else {
 			// do nothing.
 		}
 	}
 	if (pos.y > viewHeight) {
-		objectRef->position.y = -1.0 * viewHeight;
+		position.y = -viewHeight;
 	}
 	else {
-		if (pos.y < -1.0 * viewHeight) {
-			objectRef->position.y = viewHeight;
+		if (pos.y < -viewHeight) {
+			position.y = viewHeight;
 		}
 		else {
 			//do nothing.
 		}
 	}
-	*/
 
-	if (pos.x > -viewWidth && pos.x < viewWidth) {
+	/*if (pos.x > -viewWidth && pos.x < viewWidth) {
 		//do nothing.
 	}
 	else {
-		position.x *= -1;
+		position.x = -position.x - Buffer;
 	}
 	if (pos.y > -viewHeight && pos.y < viewHeight) {
 		//do nothing.
 	}
 	else {
-		position.y *= -1;
-	}
+		position.y = -1 - Buffer;
+	}*/
 }

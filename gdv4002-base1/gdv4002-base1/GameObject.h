@@ -23,4 +23,5 @@ public:
 	void keepOnScreen(float, float, float buffer);
 	void setVelocity(glm::vec2 dir, float speed);
 	void makeNew(GameObject object);
+	bool checkColl(GameObject object);
 };
