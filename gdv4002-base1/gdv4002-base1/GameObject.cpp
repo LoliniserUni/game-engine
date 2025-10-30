@@ -21,6 +21,7 @@ GameObject::GameObject(GameObject2D* object) {
 void GameObject::turnLeft(double tDelta) {
 
 	orientation = orientation + (rotSpeed * tDelta);
+	
 }
 void GameObject::turnRight(double tDelta) {
 
@@ -65,11 +66,11 @@ glm::vec2 GameObject::getPosition() {
 	return position;
 }
 
-void GameObject::keepOnScreen(float viewWidth, float viewHeight) {
+void GameObject::keepOnScreen(float viewWidth, float viewHeight, float Buffer) {
 	glm::vec2 pos = getPosition();
 
-	viewHeight += 5;
-	viewWidth += 5;
+	viewHeight += Buffer;
+	viewWidth += Buffer;
 	/*
 	if (pos.x > viewWidth) {
 		objectRef->position.x = -1.0 * viewWidth;

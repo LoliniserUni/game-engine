@@ -469,6 +469,8 @@ void defaultRenderScene()
 	glMatrixMode(GL_MODELVIEW);
 	glLoadIdentity();
 
+	glDisable(GL_DEPTH_TEST);
+
 	// Render axis lines if flag set
 	if (_showAxisLines) {
 

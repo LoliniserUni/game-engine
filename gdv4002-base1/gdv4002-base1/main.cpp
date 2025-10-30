@@ -1,6 +1,9 @@
 #include "Engine.h"
 #include "Player.h"
 #include "Bullet.h"
+#include "Astroid.h"
+#include <time.h>
+#include <stdlib.h>
 
 // Function prototypes
 void myUpdateScene(GLFWwindow*,double);
@@ -9,6 +12,9 @@ void playerControl(double);
 void shoot(double);
 void updateBullets(double);
 void deleteBulletFromArray(int);
+void spawnMedAstroid(double);
+void deleteMedAstFromArray(int index);
+void updateAstroids(double tDelta);
 
 bool wKey, aKey, sKey, dKey,spaceKey = false;
 int bulletNum = 0;
@@ -22,7 +28,7 @@ float width, height;
 
 bool canShoot = false;
 
-int bulletTexture, playerTexture;
+int bulletTexture, playerTexture, astroidBigTexture, astroidMediumTexture, astroidSmallTexture;
 
 glm::vec2 BulletSize = glm::vec2(5,5);
 
@@ -32,6 +38,19 @@ int bulletIndex = 0;
 
 float shotTimer = 1.0f;
 float shotDelay = 0.1f;
+
+Astroid astroid = new Astroid();
+Astroid* medAstroidArr = new Astroid[10];
+int medAstroidIndex = 0;
+
+bool astroidExists = true;
+
+
+float bigAstroidSpeed = 30.0f;
+float medAstroidSpeed = 60.0f;
+float smallAstroidSpeed = 90.0f;
+
+glm::vec4 bg = glm::vec4(1.0f, 1.0f, 1.0f, 1.0f);
 
 int main(void) {
 
@@ -49,13 +68,20 @@ int main(void) {
 	// Setup game scene objects here
 	//
 
-	
+	srand(time(0));
 	playerTexture = loadTexture("Resources\\Textures\\player1_ship.png", TextureProperties::NearestFilterTexture());
 	bulletTexture = loadTexture("Resources\\Textures\\bullet.png", TextureProperties::NearestFilterTexture());
+	astroidBigTexture = loadTexture("Resources\\Textures\\asteroid.png", TextureProperties::NearestFilterTexture());
+	astroidSmallTexture = loadTexture("Resources\\Textures\\asteroid.png", TextureProperties::NearestFilterTexture());
 
-	player = new Player(glm::vec2(85, 85), 1.0f/4.0f*-PI, playerTexture, glm::vec2(10,10));
-	addObject("Player",player);
-	//glm::vec4 bg = glm::vec4(1.0f, 1.0f, 1.0f, 0.0f);
+	astroid.makeNew(Astroid(glm::vec2(2.0f,5.0f), 0.0f, astroidBigTexture, glm::vec2(30,30), glm::radians(100.0f), 0));
+	astroid.setVelocity(astroid.getForwardVector(), bigAstroidSpeed);
+
+	
+	player = new Player(glm::vec2(0, 0), 0, playerTexture, glm::vec2(10,10));
+	addObject("Player", player);
+
+	addObject("Astroid", &astroid);
 
 
 	width = getViewplaneWidth();
@@ -75,20 +101,37 @@ int main(void) {
 }
 void myUpdateScene(GLFWwindow* window, double tDelta) {
 	//Update Function
+	updateAstroids(tDelta);
+
+	astroid.keepOnScreen(getViewplaneWidth() / 2.0f, getViewplaneHeight() / 2.0f, 15);
+
+	playerControl(tDelta);
+	player->keepOnScreen(getViewplaneWidth() / 2.0f, getViewplaneHeight() / 2.0f, 5);
+
+	updateBullets(tDelta);
+}
+
+void updateAstroids(double tDelta) {
+	if (astroidExists) {
+		astroid.updateVel(tDelta);
+	}
+	
+
+	for (int ma = 0; ma < medAstroidIndex; ma++) {
+		medAstroidArr[ma].updateVel(tDelta);
+		medAstroidArr[ma].keepOnScreen(getViewplaneWidth() / 2.0f, getViewplaneHeight() / 2.0f, medAstroidArr[ma].size / 2);
+	}
+}
+void playerControl(double tDelta) {
+
 	shotTimer += (float)tDelta;
-	if (shotTimer >= shotDelay) {
+	if (shotTimer > shotDelay) {
 		canShoot = true;
 	}
 	else {
 		canShoot = false;
 	}
 
-	playerControl(tDelta);
-	player->keepOnScreen(getViewplaneWidth() / 2.0f, getViewplaneHeight() / 2.0f);
-
-	updateBullets(tDelta);
-}
-void playerControl(double tDelta) {
 	if (aKey) {
 		player->turnLeft(tDelta);
 	}
@@ -110,21 +153,82 @@ void playerControl(double tDelta) {
 void updateBullets(double tDelta) {
 	for (int i = 0; i < bulletIndex; i++) {
 		bullet[i].updateVel(tDelta);
-		
-		/*bullet[i].keepOnScreen(getViewplaneWidth() / 2.0f, getViewplaneHeight() / 2.0f);
-		if (!bullet[i].reduceTime(tDelta)) {
-			//do nothing
-		}
-		else {
-			deleteBulletFromArray(i);
-		}*/
+
 		if (!bullet[i].deleteOffScreen(getViewplaneWidth() / 2.0f, getViewplaneHeight() / 2.0f)) {
 			//do nothing
 		}
 		else {
 			deleteBulletFromArray(i);
+
+		}
+		if (astroidExists) {
+			float bx = bullet[i].getPosition().x;
+			float by = bullet[i].getPosition().y;
+
+			float ax = astroid.getPosition().x;
+			float ay = astroid.getPosition().y;
+
+			float xDif = abs(bx - ax);
+			float yDif = abs(bx - ax);
+
+			if (xDif < astroid.size.x / 2.0f && yDif < astroid.size.y / 2.0f) {
+				astroid.makeNew(new Astroid());
+				spawnMedAstroid(tDelta);
+				spawnMedAstroid(tDelta);
+
+				deleteBulletFromArray(i);
+				astroidExists = false;
+			}
+		}
+
+		for (int ma = 0; ma < medAstroidIndex; ma++) {
+			float bx = bullet[i].getPosition().x;
+			float by = bullet[i].getPosition().y;
+
+
+			float ax = medAstroidArr[ma].getPosition().x;
+			float ay = medAstroidArr[ma].getPosition().y;
+
+			float xDif = abs(bx - ax);
+			float yDif = abs(bx - ax);
+
+			if (xDif < medAstroidArr[ma].size.x / 2.0f && yDif < medAstroidArr[ma].size.y / 2.0f) {
+				medAstroidArr[ma].makeNew(new Astroid());
+
+				deleteBulletFromArray(i);
+				deleteMedAstFromArray(ma);
+			}
 		}
 	}
+}
+
+void spawnMedAstroid(double tDelta) {
+	float width = getViewplaneWidth();
+	float height = getViewplaneHeight();
+
+	float x = 0;
+	float y = 0;
+
+	if (rand() % 2 < 1) {
+		x = (rand() % (int) width) - width / 2;
+		y = height / 2;
+	}
+	else {
+		y = (rand() % (int)height) - height / 2;
+		x = width / 2;
+	}
+
+	float ori = glm::radians(rand() % 360 * 1.0f);
+	float rotSpeed = rand() % 50 + 100 * 1.0f;
+
+	int size = rand()%3+14;
+
+	medAstroidArr[medAstroidIndex].makeNew(new Astroid(Astroid(glm::vec2(x, y), ori, astroidBigTexture, glm::vec2(size, size), glm::radians(rotSpeed), 1)));
+	addObject("medAstroid", &medAstroidArr[medAstroidIndex]);
+
+	medAstroidArr[medAstroidIndex].setVelocity(medAstroidArr[medAstroidIndex].getForwardVector(), medAstroidSpeed);
+
+	medAstroidIndex++;
 }
 
 void deleteBulletFromArray(int index) {
@@ -133,12 +237,20 @@ void deleteBulletFromArray(int index) {
 	}
 	bulletIndex--;
 	bullet[bulletIndex].makeNew(Bullet());
-	bullet[index - 1].position = glm::vec2(10000.0f, 10000.0f);
-	deleteObject(&bullet[index-1]);
+	bullet[index-1].position = glm::vec2(10000.0f, 10000.0f);
 	
 }
+
+void deleteMedAstFromArray(int index) {
+	for (int i = index; i < medAstroidIndex - 1; i++) {
+		medAstroidArr[i].makeNew(medAstroidArr[i + 1]);
+	}
+	medAstroidIndex--;
+	medAstroidArr[bulletIndex].makeNew(Astroid());
+	medAstroidArr[index - 1].position = glm::vec2(10000.0f, 10000.0f);
+
+}
 void shoot(double tDelta) {
-	printf("Shoot,%d\n", bulletIndex);
 	bullet[bulletIndex].makeNew(player->shoot(tDelta, bulletMag, bulletTexture, BulletSize));
 	bullet[bulletIndex].setVelocity(bullet[bulletIndex].getForwardVector(), bulletMag);
 

@@ -20,7 +20,7 @@ public:
 	void updateVel(double tDelta);
 	glm::vec2 getForwardVector();
 	glm::vec2 getPosition();
-	void keepOnScreen(float, float);
+	void keepOnScreen(float, float, float buffer);
 	void setVelocity(glm::vec2 dir, float speed);
 	void makeNew(GameObject object);
 };
