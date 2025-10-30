@@ -22,6 +22,7 @@ void spawnBigAstroid(double tDelta, glm::vec2 pos);
 void spawnLevel();
 void checkCompletion();
 void checkPlayerHB();
+void clearScene();
 
 bool wKey, aKey, sKey, dKey,spaceKey = false;
 int bulletNum = 0;
@@ -40,19 +41,19 @@ int bulletTexture, playerTexture, astroidBigTexture, astroidMediumTexture, astro
 glm::vec2 BulletSize = glm::vec2(5,5);
 
 Player* player;
-Bullet* bullet = new Bullet[100];
+Bullet* bullet = new Bullet[10];
 int bulletIndex = 0;
 
 float shotTimer = 1.0f;
 float shotDelay = 0.1f;
 
-Astroid* bigAstroidArr = new Astroid[10];
+Astroid* bigAstroidArr = new Astroid[100];
 int bigAstroidIndex = 0;
 
-Astroid* medAstroidArr = new Astroid[50];
+Astroid* medAstroidArr = new Astroid[200];
 int medAstroidIndex = 0;
 
-Astroid* smallAstroidArr = new Astroid[100];
+Astroid* smallAstroidArr = new Astroid[500];
 int smallAstroidIndex = 0;
 
 int currentLevel = 1;
@@ -63,9 +64,9 @@ const int maPerLevel = 1;
 const int saPerLevel = 2;
 
 
-float bigAstroidSpeed = 30.0f;
-float medAstroidSpeed = 60.0f;
-float smallAstroidSpeed = 90.0f;
+float bigAstroidSpeed = 10.0f;
+float medAstroidSpeed = 20.0f;
+float smallAstroidSpeed = 25.0f;
 
 glm::vec4 bg = glm::vec4(1.0f, 0.0f, 0.0f, 1.0f);
 
@@ -165,6 +166,9 @@ void spawnLevel() {
 		return;
 	} else {
 		levelInProgress = true;
+
+		clearScene(); 
+
 		for (int ba = 0; ba < baPerLevel * currentLevel; ba++) {
 			float xPos = 0;
 			float yPos = 0;
@@ -327,7 +331,7 @@ void spawnBigAstroid(double tDelta, glm::vec2 pos) {
 	int size = rand() % 5 + 28;
 
 	bigAstroidArr[bigAstroidIndex].makeNew(Astroid(pos, ori, astroidBigTexture, glm::vec2(size, size), glm::radians(rotSpeed), 0));
-	addObject("medAstroid", &bigAstroidArr[bigAstroidIndex]);
+	addObject("bigAstroid", &bigAstroidArr[bigAstroidIndex]);
 
 	bigAstroidArr[bigAstroidIndex].setVelocity(bigAstroidArr[bigAstroidIndex].getForwardVector(), bigAstroidSpeed);
 
@@ -386,7 +390,22 @@ void spawnSmallAstroid(double tDeltam, glm::vec2 pos) {
 	array[*arrSize].position = glm::vec2(10000.0f, 10000.0f);
 }*/
 
+void clearScene() {
+	deleteObject("bulelt");
+	bulletIndex = 0;
+
+	deleteObject("bigAstroid");
+	bigAstroidIndex = 0;
+
+	deleteObject("medAstroid");
+	medAstroidIndex = 0;
+
+	deleteObject("smallAstroid");
+	smallAstroidIndex = 0;
+}
 void deleteBulletFromArray(int index) {
+	//deleteObject(&bullet[index]);
+
 	for (int i = index; i < bulletIndex-1; i++) {
 		bullet[i].makeNew(bullet[i + 1]);
 	}
@@ -396,6 +415,7 @@ void deleteBulletFromArray(int index) {
 }
 
 void deleteFromAstroidArray(Astroid* array, int index, int* arrSize) {
+	//deleteObject(&array[index]);
 
 	for (int i = index; i < (*arrSize) - 1; i++) {
 		array[i].makeNew(array[i + 1]);
@@ -445,6 +465,12 @@ void myKeyboardHandler(GLFWwindow* window, int key, int scancode, int action, in
 		{
 		case GLFW_KEY_ESCAPE:
 			// If escape is pressed tell GLFW we want to close the window (and quit)
+
+			delete[] bigAstroidArr;
+			delete[] medAstroidArr;
+			delete[] smallAstroidArr;
+			delete[] bullet;
+
 			glfwSetWindowShouldClose(window, true);
 			break;
 		case GLFW_KEY_W:
