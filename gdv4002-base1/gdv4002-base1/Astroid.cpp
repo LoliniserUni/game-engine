@@ -6,6 +6,8 @@ void Astroid::makeNew(Astroid object) {
 	size = object.size;
 	textureID = object.textureID;
 	velocity = object.velocity;
+	rot = object.rot;
+	type = object.type;
 }
 
 
@@ -17,5 +19,5 @@ void Astroid::updateVel(double tDelta) {
 }
 
 void Astroid::turnLeft(double tDelta) {
-	orientation = orientation + (rotSpeed * tDelta);
+	orientation = orientation + (rot * tDelta);
 }

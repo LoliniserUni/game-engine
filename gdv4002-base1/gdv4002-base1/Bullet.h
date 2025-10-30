@@ -21,5 +21,4 @@ public:
 	bool deleteOffScreen(float viewWidth, float viewHeight);
 
 	void makeNew(Bullet object);
-
 };
