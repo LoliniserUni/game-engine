@@ -219,6 +219,7 @@ void myUpdateScene(GLFWwindow* window, double tDelta) {
 	ufoUpdateBullets(tDelta);
 
 	checkPlayerHB(tDelta);
+
 	updateAstroids(tDelta);
 	updateBullets(tDelta);
 	updateUps(tDelta);
@@ -406,24 +407,6 @@ void updateUps(double tDelta) {
 	}
 }
 
-void updateAstroids(double tDelta) {
-	for (int ba = 0; ba < bigAstroidIndex; ba++) {
-		bigAstroidArr[ba].updateVel(tDelta);
-		bigAstroidArr[ba].keepOnScreen(getViewplaneWidth() / 2.0f, getViewplaneHeight() / 2.0f, bigAstroidArr[ba].size.x/2.0f);
-	}
-	
-
-	for (int ma = 0; ma < medAstroidIndex; ma++) {
-		medAstroidArr[ma].updateVel(tDelta);
-		medAstroidArr[ma].keepOnScreen(getViewplaneWidth() / 2.0f, getViewplaneHeight() / 2.0f, medAstroidArr[ma].size.x / 2.0f);
-	}
-
-	for (int sa = 0; sa < smallAstroidIndex; sa++) {
-		smallAstroidArr[sa].updateVel(tDelta);
-		smallAstroidArr[sa].keepOnScreen(getViewplaneWidth() / 2.0f, getViewplaneHeight() / 2.0f, smallAstroidArr[sa].size.x / 2.0f);
-	}
-}
-
 void enemyControl(double tDelta) {
 	for (int i = 0; i < ufoIndex; i++) {
 		float fX = UFO[i].position.x;
@@ -466,6 +449,26 @@ void playerControl(double tDelta) {
 		shotTimer = 0.0f;
 	}
 	player->updateVel(tDelta);
+}
+
+
+//update functions :D
+void updateAstroids(double tDelta) {
+	for (int ba = 0; ba < bigAstroidIndex; ba++) {
+		bigAstroidArr[ba].updateVel(tDelta);
+		bigAstroidArr[ba].keepOnScreen(getViewplaneWidth() / 2.0f, getViewplaneHeight() / 2.0f, bigAstroidArr[ba].size.x / 2.0f);
+	}
+
+
+	for (int ma = 0; ma < medAstroidIndex; ma++) {
+		medAstroidArr[ma].updateVel(tDelta);
+		medAstroidArr[ma].keepOnScreen(getViewplaneWidth() / 2.0f, getViewplaneHeight() / 2.0f, medAstroidArr[ma].size.x / 2.0f);
+	}
+
+	for (int sa = 0; sa < smallAstroidIndex; sa++) {
+		smallAstroidArr[sa].updateVel(tDelta);
+		smallAstroidArr[sa].keepOnScreen(getViewplaneWidth() / 2.0f, getViewplaneHeight() / 2.0f, smallAstroidArr[sa].size.x / 2.0f);
+	}
 }
 
 void updateBullets(double tDelta) {
@@ -596,6 +599,7 @@ void ufoUpdateBullets(double tDelta) {
 	}
 }
 
+//Spawn fucntions :)
 void spawnBigAstroid(double tDelta, glm::vec2 pos) {
 
 	float ori = glm::radians(rand() % 360 * 1.0f);
@@ -669,6 +673,7 @@ void spawnUFO(double tDelta, glm::vec2 pos) {
 	ufoIndex++;
 }
 
+// clear scene and reset scene
 void clearScene() {
 	deleteMatchingObjects("bullet");
 	bulletIndex = 0;
@@ -695,6 +700,7 @@ void fullReset() {
 	player->velocity = glm::vec2(0,0);
 }
 
+// delete objects from array
 void deleteUFO(int index) {
 
 	enemyUFO temp = UFO[index];
@@ -737,6 +743,7 @@ void deleteFromAstroidArray(Astroid* array, int index, int* arrSize) {
 	deleteObject(&temp);
 }
 
+// shoot functions
 void enemyShoot(double tDelta, int index) {
 	enemyBullet[enemyBulletIndex].makeNew(UFO[index].shoot(tDelta, bulletMag, ufoBulletText, BulletSize));
 	enemyBullet[enemyBulletIndex].setVelocity(enemyBullet[enemyBulletIndex].getForwardVector(), bulletMag);
@@ -753,6 +760,7 @@ void shoot(double tDelta) {
 	bulletIndex++;
 }
 
+//Keyboard handler
 void myKeyboardHandler(GLFWwindow* window, int key, int scancode, int action, int mods)
 {
 	// Check if a key is pressed

@@ -20,7 +20,6 @@ void animation::updateAnim(double tDelta, glm::vec2 firePos) {
 	else {
 		//do nothing
 	}
-	
 }
 void animation::playAnim(glm::vec2 pos, float ori, double tDelta) {
 	this->position = pos;
