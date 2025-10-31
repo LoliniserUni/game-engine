@@ -13,6 +13,7 @@ GameObject enemyUFO::shoot(double tDelta, float speed, int texture, glm::vec2 si
 	GameObject bullet = GameObject(newPos, ori, texture, size);
 	bullet.setVelocity(bullet.getForwardVector(), speed);
 
+	flare->playAnim(newPos, ori,tDelta);
 	return bullet;
 }
 
@@ -33,4 +34,5 @@ void enemyUFO::makeNew(enemyUFO ufo) {
 	this->orientation = ufo.orientation;
 	this->textureID = ufo.textureID;
 	this->size = ufo.size;
+	this->flare = ufo.flare;
 }

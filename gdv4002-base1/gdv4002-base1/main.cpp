@@ -15,9 +15,7 @@ void shoot(double);
 void updateBullets(double);
 void deleteBulletFromArray(Bullet* array, int index, int* arrSize);
 void spawnMedAstroid(double, glm::vec2 pos);
-//void deleteMedAstFromArray(int index);
 void updateAstroids(double tDelta);
-//void deleteFromArray(Bullet* array, int index, int* arrSize);
 void deleteFromAstroidArray(Astroid* array, int index, int* arrSize);
 void spawnSmallAstroid(double tDelta,glm::vec2 pos);
 void spawnBigAstroid(double tDelta, glm::vec2 pos);
@@ -76,12 +74,15 @@ int smallAstroidIndex = 0;
 int* gunFlareIDs = new int[4];
 animation gunFlareAnimL, gunFlareAnimR;
 
+int* blueGunFlareIDs = new int[4];
+
 int* healthTextIDs = new int[6];
 GameObject2D healthBar;
 
 GameObject healthUp, shieldUp;
 const float pUpSpeed = 9.0f;
 
+animation* UFOgunFlare = new animation[10];
 enemyUFO* UFO = new enemyUFO[10];
 int UFOtexture;
 int ufoBulletText;
@@ -146,6 +147,11 @@ int main(void) {
 	gunFlareIDs[1] = loadTexture("Resources\\Textures\\Gun Flare\\flare2.png", TextureProperties::NearestFilterTexture());
 	gunFlareIDs[2] = loadTexture("Resources\\Textures\\Gun Flare\\flare3.png", TextureProperties::NearestFilterTexture());
 	gunFlareIDs[3] = loadTexture("Resources\\Textures\\Gun Flare\\flare4.png", TextureProperties::NearestFilterTexture());
+
+	blueGunFlareIDs[0] = loadTexture("Resources\\Textures\\Enemy Gun Flare\\1.png", TextureProperties::NearestFilterTexture());
+	blueGunFlareIDs[1] = loadTexture("Resources\\Textures\\Enemy Gun Flare\\2.png", TextureProperties::NearestFilterTexture());
+	blueGunFlareIDs[2] = loadTexture("Resources\\Textures\\Enemy Gun Flare\\3.png", TextureProperties::NearestFilterTexture());
+	blueGunFlareIDs[3] = loadTexture("Resources\\Textures\\Enemy Gun Flare\\4.png", TextureProperties::NearestFilterTexture());
 
 	healthTextIDs[0] = loadTexture("Resources\\Textures\\Health\\bar0.png", TextureProperties::NearestFilterTexture());
 	healthTextIDs[1] = loadTexture("Resources\\Textures\\Health\\bar1.png", TextureProperties::NearestFilterTexture());
@@ -420,6 +426,9 @@ void updateAstroids(double tDelta) {
 
 void enemyControl(double tDelta) {
 	for (int i = 0; i < ufoIndex; i++) {
+		float fX = UFO[i].position.x;
+		float fY = UFO[i].position.y - 2.5f;
+		UFO[i].flare->updateAnim(tDelta, glm::vec2(fX,fY));
 		UFO[i].ufoShotTimer += tDelta;
 
 		if (UFO[i].ufoShotTimer > ufoShotDelay) {
@@ -650,9 +659,10 @@ void spawnUFO(double tDelta, glm::vec2 pos) {
 	if (rand() % 2 < 1) {
 		speed = -speed;
 	}
-
-	UFO[ufoIndex].makeNew(enemyUFO(pos, 0, UFOtexture, glm::vec2(10.0f, 10.0f)));
+	UFOgunFlare[ufoIndex].makeNew(animation(0.0f, blueGunFlareIDs, 4, glm::vec2(3, 3)));
+	UFO[ufoIndex].makeNew(enemyUFO(pos, 0, UFOtexture, glm::vec2(10.0f, 10.0f) , &UFOgunFlare[ufoIndex]));
 	addObject("enemyUFO", &UFO[ufoIndex]);
+	addObject("UFOflareAnimation", &UFOgunFlare[ufoIndex]);
 
 	UFO[ufoIndex].setVelocity(UFO[ufoIndex].getForwardVector(), speed);
 

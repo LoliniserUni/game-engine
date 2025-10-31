@@ -10,9 +10,12 @@ public:
 	bool shotSwap = false;
 	int health = 15;
 	float ufoShotTimer = 0.0f;
+	animation* flare;
 
 	enemyUFO() {};
-	enemyUFO(glm::vec2 pos, float ori, int textID, glm::vec2 siz) : GameObject(pos, ori, textID, siz) {};
+	enemyUFO(glm::vec2 pos, float ori, int textID, glm::vec2 siz, animation* shootFlare) : GameObject(pos, ori, textID, siz) {
+		this->flare = shootFlare;
+	};
 
 	enemyUFO(GameObject2D* object) : GameObject(object) {}
 
