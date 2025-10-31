@@ -41,22 +41,23 @@ int bulletTexture, playerTexture, astroidBigTexture, astroidMediumTexture, astro
 glm::vec2 BulletSize = glm::vec2(5,5);
 
 Player* player;
-Bullet* bullet = new Bullet[10];
+Bullet* bullet = new Bullet[1000];
 int bulletIndex = 0;
 
 float shotTimer = 1.0f;
 float shotDelay = 0.1f;
 
-Astroid* bigAstroidArr = new Astroid[100];
+Astroid* bigAstroidArr = new Astroid[50];
 int bigAstroidIndex = 0;
 
-Astroid* medAstroidArr = new Astroid[200];
+Astroid* medAstroidArr = new Astroid[150];
 int medAstroidIndex = 0;
 
-Astroid* smallAstroidArr = new Astroid[500];
+Astroid* smallAstroidArr = new Astroid[550];
 int smallAstroidIndex = 0;
 
 int currentLevel = 1;
+const int maxLevel = 50;
 bool levelInProgress = false;
 
 const int baPerLevel = 1;
@@ -93,6 +94,7 @@ int main(void) {
 	astroidSmallTexture = loadTexture("Resources\\Textures\\asteroid.png", TextureProperties::NearestFilterTexture());
 	
 	player = new Player(glm::vec2(0, 0), 0, playerTexture, glm::vec2(10,10));
+
 	addObject("Player", player);
 
 	width = getViewplaneWidth();
@@ -156,7 +158,9 @@ void checkPlayerHB() {
 void checkCompletion() {
 	if (bigAstroidIndex + medAstroidIndex + smallAstroidIndex == 0) {
 		levelInProgress = false;
-		currentLevel++;
+		if (currentLevel != maxLevel) {
+			currentLevel++;
+		}
 	}
 }
 
@@ -267,6 +271,8 @@ void updateBullets(double tDelta) {
 		}
 		else {
 			//deleteFromArray(bullet, i, &bulletIndex);
+
+			//deleteObject(&bullet[i]);
 			deleteBulletFromArray(i);
 
 		}
@@ -391,31 +397,36 @@ void spawnSmallAstroid(double tDeltam, glm::vec2 pos) {
 }*/
 
 void clearScene() {
-	deleteObject("bulelt");
+	deleteMatchingObjects("bullet");
 	bulletIndex = 0;
 
-	deleteObject("bigAstroid");
+	deleteMatchingObjects("bigAstroid");
 	bigAstroidIndex = 0;
 
-	deleteObject("medAstroid");
+	deleteMatchingObjects("medAstroid");
 	medAstroidIndex = 0;
 
-	deleteObject("smallAstroid");
+	deleteMatchingObjects("smallAstroid");
 	smallAstroidIndex = 0;
 }
 void deleteBulletFromArray(int index) {
 	//deleteObject(&bullet[index]);
+	Bullet temp = bullet[index];
 
-	for (int i = index; i < bulletIndex-1; i++) {
+	for (int i = index; i < bulletIndex - 1; i++) {
 		bullet[i].makeNew(bullet[i + 1]);
 	}
 	bulletIndex--;
 	bullet[bulletIndex].makeNew(Bullet());
 	bullet[bulletIndex].position = glm::vec2(10000.0f, 10000.0f);
+
+	deleteObject(&temp);
 }
 
 void deleteFromAstroidArray(Astroid* array, int index, int* arrSize) {
 	//deleteObject(&array[index]);
+
+	Astroid temp = array[index];
 
 	for (int i = index; i < (*arrSize) - 1; i++) {
 		array[i].makeNew(array[i + 1]);
@@ -423,6 +434,8 @@ void deleteFromAstroidArray(Astroid* array, int index, int* arrSize) {
 	(*arrSize)--;
 	array[*arrSize].makeNew(Astroid());
 	array[*arrSize].position = glm::vec2(10000.0f, 10000.0f);
+
+	deleteObject(&temp);
 }
 
 

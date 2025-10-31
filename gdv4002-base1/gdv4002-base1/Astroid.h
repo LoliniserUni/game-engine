@@ -18,7 +18,7 @@ public:
 
 		switch (this->type) {
 		case 0:
-			hits = 5;
+			hits = 7;
 			break;
 		case 1:
 			hits = 3;

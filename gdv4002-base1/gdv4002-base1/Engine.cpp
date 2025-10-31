@@ -240,6 +240,7 @@ GameObject2D* addObject(const char* name, GameObject2D* newObject) {
 
 			objectCount[name] = objectCount[name] + 1; // pre-increment count against 'name'
 			keyString = string(name) + to_string(objectCount[name]);
+			printf("Adding object with key %s\n", keyString.c_str());
 		}
 
 		// Store object
