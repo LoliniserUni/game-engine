@@ -7,21 +7,22 @@
 class enemyUFO : public GameObject
 {
 public:
-	bool shotSwap = false;
+	// Variables
 	int health = 15;
 	float ufoShotTimer = 0.0f;
 	animation* flare;
 
+	// Default constructor
 	enemyUFO() {};
+
+	// Constructors
 	enemyUFO(glm::vec2 pos, float ori, int textID, glm::vec2 siz, animation* shootFlare) : GameObject(pos, ori, textID, siz) {
 		this->flare = shootFlare;
 	};
-
 	enemyUFO(GameObject2D* object) : GameObject(object) {}
-
+	
+	// Functions
 	void makeNew(enemyUFO ufo);
-
 	GameObject shoot(double tDelta, float speed, int texture, glm::vec2 size);
-
 	bool reduceHealth();
 };

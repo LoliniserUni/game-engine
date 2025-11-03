@@ -6,14 +6,16 @@
 class Astroid : public GameObject
 {
 public:
-	float rot;
-	// 0 for big, 1 for medium, 2 for small
+	// Variables
 	int type;
-
 	int hits;
 
-	Astroid(glm::vec2 pos, float ori, int textID, glm::vec2 siz, float rot, int type) : GameObject(pos, ori, textID, siz) {
-		this->rot = rot;
+	// Default constructor
+	Astroid() : GameObject() {}
+
+	// Constructors
+	Astroid(glm::vec2 pos, float ori, int textID, glm::vec2 siz, float rotSpeed, int type) : GameObject(pos, ori, textID, siz) {
+		this->rotSpeed = rotSpeed;
 		this->type = type;
 
 		switch (this->type) {
@@ -32,12 +34,11 @@ public:
 		}
 	};
 	Astroid(GameObject2D* object) : GameObject(object) {}
-	Astroid() : GameObject() {}
-
+	
+	// Functions
 	bool addHit();
 	void makeNew(Astroid object);
 	void updateVel(double tDelta);
-
-	void turnLeft(double tDelta);
+	void rotate(double tDelta);
 
 };

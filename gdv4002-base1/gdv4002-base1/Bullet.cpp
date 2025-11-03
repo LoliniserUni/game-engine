@@ -1,56 +1,62 @@
 #include "Bullet.h"
 
-bool Bullet::reduceTime(double tDelta) {
-	lifeTime -= (float)tDelta;
-	return lifeTime <= 0.0f;
-}
-
 void Bullet::makeNew(GameObject object) {
+	// Asign passed variables to the bullet object
 	position = object.position;
 	orientation = object.orientation;
 	size = object.size;
 	textureID = object.textureID;
-	lifeTime = FIXED_LIFETIME;
+}
+
+void Bullet::makeNew(Bullet object) {
+	// Set all variables to the passed objects variables
+	position = object.position;
+	orientation = object.orientation;
+	size = object.size;
+	textureID = object.textureID;
+	velocity = object.velocity;
 }
 
 bool Bullet::deleteOffScreen(float viewWidth, float viewHeight) {
-	glm::vec2 pos = getPosition();
+	// Get the current position of the bullet
+	glm::vec2 pos = position;
 
-	viewHeight += 10;
-	viewWidth += 10;
+	// Buffer added to the size
+	viewHeight += this->size.y / 0.2f;
+	viewWidth += this->size.x / 0.2f;
 
 
 	if (pos.x > viewWidth) {
+		// If out of bounds on the right, return true
 		return true;
 	}
 	else {
 		if (pos.x < -1.0 * viewWidth) {
+			// If out of bounds on the left, return true
 			return true;
 		}
 		else {
+			// If inbounds
 			// do nothing.
 		}
 	}
 	if (pos.y > viewHeight) {
+		// If out of bounds at the top, return true
 		return true;
 	}
 	else {
+		// If out of bounds at the bottom, return true
 		if (pos.y < -1.0 * viewHeight) {
 			return true;
 		}
 		else {
+			// If inbounds
 			//do nothing.
 		}
 	}
+
+	// Return false if inbounds.
 	return false;
 	
 }
 
-void Bullet::makeNew(Bullet object) {
-	position = object.position;
-	orientation = object.orientation;
-	size = object.size;
-	textureID = object.textureID;
-	lifeTime = FIXED_LIFETIME;
-	velocity = object.velocity;
-}

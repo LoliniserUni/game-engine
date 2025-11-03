@@ -1,122 +1,85 @@
 #include "GameObject.h"
 
-
-GameObject::GameObject() {
-}
-
-
-GameObject::GameObject(glm::vec2 pos, float ori, int textID, glm::vec2 siz) {
-	position = pos;
-	orientation = ori;
-	size = siz;
-	textureID = textID;
-}
-
-GameObject::GameObject(GameObject2D* object) {
-	position = object->position;
-	orientation = object->orientation;
-	size = object->size;
-	textureID = object->textureID;
-}
-void GameObject::turnLeft(double tDelta) {
-
-	orientation = orientation + (rotSpeed * tDelta);
-	
-}
-void GameObject::turnRight(double tDelta) {
-
-	orientation = orientation + (-rotSpeed * tDelta);
-}
-void GameObject::addVelocity(glm::vec2 dir, float mag, double tDelta) {
-	glm::vec2 accel = dir * (float)tDelta * mag;
-	velocity += accel;
-
-	if (glm::length(velocity) > maxSpeed) {
-		velocity = glm::normalize(velocity);
-		velocity *= maxSpeed;
-
-	}
-}
-
 bool GameObject::checkColl(GameObject object) {
-	float bx = object.getPosition().x;
-	float by = object.getPosition().y;
+	// Get passed objects position
+	float bx = object.position.x;
+	float by = object.position.y;
 
-	float ax = getPosition().x;
-	float ay = getPosition().y;
+	// Get current position
+	float ax = position.x;
+	float ay = position.y;
 
+	// Get the distance between the 2 2objects
 	float xDif = abs(bx - ax);
 	float yDif = abs(by - ay);
 
+	// Return true if the distance between the 2 points is smaller than this objects size (ie, the passed objects centre is within this objects size)
 	return (xDif < size.x / 2.0f && yDif < size.y / 2.0f);
 }
+
 void GameObject::setVelocity(glm::vec2 dir, float speed) {
+	// Set the velocity
 	velocity = dir * speed;
 }
 void GameObject::updateVel(double tDelta) {
-
-
+	// Update position based on the velocity * the time delta
 	position += velocity * (float)tDelta;
 
 }
 
 void GameObject::makeNew(GameObject object) {
+	// Set all variables to the passed objects values
 	position = object.position;
 	orientation = object.orientation;
 	size = object.size;
 	textureID = object.textureID;
 }
+
 glm::vec2 GameObject::getForwardVector() {
+	
+	// Get the x and y coordinates of the forwards direction in the unit circle
 	float xComp = cos(orientation);
 	float yComp = sin(orientation);
-	glm::vec2 forwardVec = glm::vec2(xComp, yComp);
 
+	// Return this forward vector
+	glm::vec2 forwardVec = glm::vec2(xComp, yComp);
 	return forwardVec;
 }
 
-glm::vec2 GameObject::getPosition() {
-	return position;
-}
+void GameObject::keepOnScreen(float viewWidth, float viewHeight) {
+	// Get the current position
+	glm::vec2 pos = this->position;
 
-void GameObject::keepOnScreen(float viewWidth, float viewHeight, float Buffer) {
-	glm::vec2 pos = getPosition();
-
-	viewHeight += Buffer;
-	viewWidth += Buffer;
+	// Offset the width and height by half the objects dimentions
+	viewHeight += this->size.y / 2.0f;
+	viewWidth += this->size.x / 2.0f;
 	
 	if (pos.x > viewWidth) {
+		// if position is out of bounds on the right, teleport to the left
 		position.x = -viewWidth;
 	}
 	else {
 		if (pos.x < -viewWidth) {
+			// if position is out of bounds on the left, teleport to the right
 			position.x = viewWidth;
 		}
 		else {
+			// if position is in bounds
 			// do nothing.
 		}
 	}
 	if (pos.y > viewHeight) {
+		// if position is out of bounds on the top, teleport to the bottom
 		position.y = -viewHeight;
 	}
 	else {
 		if (pos.y < -viewHeight) {
+			// if position is out of bounds on the bottom, teleport to the top
 			position.y = viewHeight;
 		}
 		else {
+			// if position is in bounds
 			//do nothing.
 		}
 	}
-
-	/*if (pos.x > -viewWidth && pos.x < viewWidth) {
-		//do nothing.
-	}
-	else {
-		position.x = -position.x - Buffer;
-	}
-	if (pos.y > -viewHeight && pos.y < viewHeight) {
-		//do nothing.
-	}
-	else {
-		position.y = -1 - Buffer;
-	}*/
 }
