@@ -46,7 +46,7 @@ Player* player;
 bool wKey, aKey, sKey, dKey,spaceKey = false;
 const float forwardForce = 200.0f;
 
-const int damageCoolDown = 1.0f;
+const float damageCoolDown = 1.0f;
 float cDamageTimer = 0;
 
 // Bullet related variables
@@ -122,7 +122,7 @@ GameObject healthUp, shieldUp;
 const float pUpSpeed = 9.0f;
 
 // Power up variables
-const int powerUpDespawn = 10.0f;
+const float powerUpDespawn = 10.0f;
 float healthUpTimer = 0.0f;
 float shieldUpTimer = 0.0f;
 
@@ -130,7 +130,7 @@ float shieldUpTimer = 0.0f;
 const float PI = 3.141593f;
 
 int main(void) {
-
+		
 	// Initialise the engine (create window, setup OpenGL backend)
 	int initResult = engineInit("GDV4002 - Applied Maths for Games", 1024, 1024,160.0f);
 
@@ -149,7 +149,7 @@ int main(void) {
 	width = getViewplaneWidth();
 	height = getViewplaneHeight();
 
-	srand(time(0));
+	srand((unsigned int) time(0));
 
 	//setting all the various textures 
 	playerTexture = loadTexture("Resources\\Textures\\player1_ship.png", TextureProperties::NearestFilterTexture());
@@ -299,7 +299,7 @@ void updateBullets(double tDelta) {
 			if (UFO[ufo].checkColl(bullet[i])) {
 
 				// Get the position the hit happened
-				hitPos = UFO[ufo].position;
+				hitPos = UFO[ufo].getPos();
 				
 				// Hit occured
 				hit = true;
@@ -329,18 +329,18 @@ void updateBullets(double tDelta) {
 				hit = true;
 
 				// Get ths position of the hit
-				hitPos = bigAstroidArr[ba].position;
+				hitPos = bigAstroidArr[ba].getPos();
 
 				// Reduce the asteroids health.
 				if (bigAstroidArr[ba].addHit()) {
 
 					//if health == 0; spawn spaller asteroids (only aplicable for big and med asteroids)
-					spawnMedAstroid(tDelta, bigAstroidArr[ba].position);
-					spawnMedAstroid(tDelta, bigAstroidArr[ba].position);
+					spawnMedAstroid(tDelta, bigAstroidArr[ba].getPos());
+					spawnMedAstroid(tDelta, bigAstroidArr[ba].getPos());
 
 					// Reset the asteroids values, and move it off screen (this is so that the game engine doesnt leave a white block in the middle of my screen)
 					bigAstroidArr[ba].makeNew(new Astroid());
-					bigAstroidArr[ba].position = glm::vec2(10000.0f, 10000.0f);
+					bigAstroidArr[ba].getPos() = glm::vec2(1000.0f, 1000.0f);
 
 					// delete the asteroid
 					deleteFromAstroidArray(bigAstroidArr, ba, &bigAstroidIndex);
@@ -359,16 +359,16 @@ void updateBullets(double tDelta) {
 
 				hit = true;
 
-				hitPos = medAstroidArr[ma].position;
+				hitPos = medAstroidArr[ma].getPos();
 
 				if (medAstroidArr[ma].addHit()) {
 
-					spawnSmallAstroid(tDelta, medAstroidArr[ma].position);
-					spawnSmallAstroid(tDelta, medAstroidArr[ma].position);
-					spawnSmallAstroid(tDelta, medAstroidArr[ma].position);
+					spawnSmallAstroid(tDelta, medAstroidArr[ma].getPos());
+					spawnSmallAstroid(tDelta, medAstroidArr[ma].getPos());
+					spawnSmallAstroid(tDelta, medAstroidArr[ma].getPos());
 
 					medAstroidArr[ma].makeNew(new Astroid());
-					medAstroidArr[ma].position = glm::vec2(10000.0f, 10000.0f);
+					medAstroidArr[ma].getPos() = glm::vec2(1000.0f, 1000.0f);
 
 					deleteFromAstroidArray(medAstroidArr, ma, &medAstroidIndex);
 
@@ -385,12 +385,12 @@ void updateBullets(double tDelta) {
 
 				hit = true;
 
-				hitPos = smallAstroidArr[sa].position;
+				hitPos = smallAstroidArr[sa].getPos();
 
 				if (smallAstroidArr[sa].addHit()) {
 
 					smallAstroidArr[sa].makeNew(new Astroid());
-					smallAstroidArr[sa].position = glm::vec2(10000.0f, 10000.0f);
+					smallAstroidArr[sa].getPos() = glm::vec2(1000.0f, 1000.0f);
 
 					deleteFromAstroidArray(smallAstroidArr, sa, &smallAstroidIndex);
 
@@ -408,7 +408,7 @@ void updateBullets(double tDelta) {
 		if (kill) {
 
 			// Check if the health postion is already active (only one at a time), the following applies for all power ups.
-			if (healthUp.position.x < 100) {
+			if (healthUp.getPos().x < 100) {
 				//do nothing
 			}
 			else {
@@ -426,7 +426,7 @@ void updateBullets(double tDelta) {
 				}
 			}
 
-			if (shieldUp.position.x < 100) {
+			if (shieldUp.getPos().x < 100) {
 				//do nothing
 			}
 			else {
@@ -479,35 +479,35 @@ void ufoUpdateBullets(double tDelta) {
 
 void updateAnim(double tDelta) {
 	// Get players position and offset it forwards
-	float fX = 5 * cos(player->orientation) + player->position.x;
-	float fY = 5 * sin(player->orientation) + player->position.y;
+	float fX = 5 * cos(player->getOri()) + player->getPos().x;
+	float fY = 5 * sin(player->getOri()) + player->getPos().y;
 
 	// Offset the position to the left and right respectivly 
-	float lX = fX + (2 * cos(player->orientation + 90 * 180 / PI));
-	float lY = fY + (2 * sin(player->orientation + 90 * 180 / PI));
+	float lX = fX + (2 * cos(player->getOri() + 90 * 180 / PI));
+	float lY = fY + (2 * sin(player->getOri() + 90 * 180 / PI));
 
-	float rX = fX + (2 * cos(player->orientation - 90 * 180 / PI));
-	float rY = fY + (2 * sin(player->orientation - 90 * 180 / PI));
+	float rX = fX + (2 * cos(player->getOri() - 90 * 180 / PI));
+	float rY = fY + (2 * sin(player->getOri() - 90 * 180 / PI));
 
 	// Update the animations, using its position relitive to the player
-	gunFlareAnimL.updateAnim(tDelta, glm::vec2(lX,lY), player->orientation);
-	gunFlareAnimR.updateAnim(tDelta, glm::vec2(rX,rY), player->orientation);
+	gunFlareAnimL.updateAnim(tDelta, glm::vec2(lX,lY), player->getOri());
+	gunFlareAnimR.updateAnim(tDelta, glm::vec2(rX,rY), player->getOri());
 }
 
 void updateUps(double tDelta) {
 	// Only update the power up if its in bounds (in use), the following applies for all power ups
-	if (healthUp.position.x < 100) {
+	if (healthUp.getPos().x < 100) {
 
 		// Update the positition and keep it on screen
 		healthUp.updateVel(tDelta);
 		healthUp.keepOnScreen(width / 2.0f, height / 2.0f);
 
 		// Increment the despawn timer
-		healthUpTimer += tDelta;
+		healthUpTimer += (float) tDelta;
 
 		if (healthUpTimer > powerUpDespawn) {
 			// If the timer is up, move the power up out of bounds
-			healthUp.position = glm::vec2(1000.0f, 1000.0f);
+			healthUp.setPos(glm::vec2(1000.0f, 1000.0f));
 		}
 	}
 	else {
@@ -515,16 +515,16 @@ void updateUps(double tDelta) {
 	}
 
 
-	if (shieldUp.position.x < 100) {
+	if (shieldUp.getPos().x < 100) {
 
 		shieldUp.updateVel(tDelta);
 		shieldUp.keepOnScreen(width / 2.0f, height / 2.0f);
 
-		shieldUpTimer += tDelta;
+		shieldUpTimer += (float) tDelta;
 
 		if (shieldUpTimer > powerUpDespawn) {
 
-			shieldUp.position = glm::vec2(1000.0f, 1000.0f);
+			shieldUp.setPos(glm::vec2(1000.0f, 1000.0f));
 		}
 	}
 	else {
@@ -538,7 +538,7 @@ void checkPlayerHB(double tDelta) {
 	// Check the players colision on power ups
 	if (healthUp.checkColl(player)) {
 		// If its a hit, move the power up out of bounds
-		healthUp.position = glm::vec2(1000.0f, 1000.0f);
+		healthUp.setPos(glm::vec2(1000.0f, 1000.0f));
 
 		// Add health to the player
 		player->addHealth();
@@ -546,14 +546,14 @@ void checkPlayerHB(double tDelta) {
 
 	if (shieldUp.checkColl(player)) {
 
-		shieldUp.position = glm::vec2(1000.0f, 1000.0f);
+		shieldUp.setPos(glm::vec2(1000.0f, 1000.0f));
 
 		// Add a sheild to the player
 		player->addSheild();
 	}
 
 	// Increment the damage cooldown
-	cDamageTimer += tDelta;
+	cDamageTimer += (float) tDelta;
 
 	// If the player is in itime (invincible time)
 	if (cDamageTimer < damageCoolDown) {
@@ -564,7 +564,7 @@ void checkPlayerHB(double tDelta) {
 	// create boolean for a hit
 	bool hit = false;
 	
-	glm::vec2 playerPos = player->position;
+	glm::vec2 playerPos = player->getPos();
 
 	// For every ufo in the scene (this works the same with asteroids)
 	for (int ufo = 0; ufo < ufoIndex; ufo++) {
@@ -660,7 +660,7 @@ void spawnLevel(double tDelta) {
 	if (levelInProgress || cLevelDelay < levelDelay) {
 
 		// increment the lvel delay, and return
-		cLevelDelay += tDelta;
+		cLevelDelay += (float) tDelta;
 		return;
 	// if a level is not in progress, and the level delay is over
 	} else {
@@ -869,16 +869,16 @@ void spawnPUp(GameObject* powerUp, glm::vec2 pos) {
 	float ori = glm::radians(rand() % 360 * 1.0f);
 
 	// Set this direction
-	powerUp->orientation = ori;
+	powerUp->setOri(ori);
 
 	// Apply the velocity in the random direction
 	powerUp->setVelocity(powerUp->getForwardVector(), pUpSpeed);
 
 	// Set the position of the power up to its spawn position
-	powerUp->position = pos;
+	powerUp->setPos(pos);
 
 	// Reset the orientation to 0.
-	powerUp->orientation = 0;
+	powerUp->setOri(0);
 
 }
 
@@ -888,24 +888,24 @@ void enemyControl(double tDelta) {
 	for (int i = 0; i < ufoIndex; i++) {
 
 		// Get its x value
-		float fX = UFO[i].position.x;
+		float fX = UFO[i].getPos().x;
 
 		// Get its Y value and offset it down
-		float fY = UFO[i].position.y - 2.5f;
+		float fY = UFO[i].getPos().y - 2.5f;
 
 		// update the animation at the new position
-		UFO[i].flare->updateAnim(tDelta, glm::vec2(fX,fY), UFO[i].orientation);
+		UFO[i].updateAnim(tDelta, glm::vec2(fX,fY), UFO[i].getOri());
 
 		// Add to the shot delay
-		UFO[i].ufoShotTimer += tDelta;
+		UFO[i].addToTimer(tDelta);
 
 		// If the UFO can shoot
-		if (UFO[i].ufoShotTimer > ufoShotDelay) {
+		if (UFO[i].getTimer() > ufoShotDelay) {
 			// Shoot
 			enemyShoot(tDelta, i);
 
 			// Reset the shot timer
-			UFO[i].ufoShotTimer = 0;
+			UFO[i].setTimer(0.0f);
 		}
 
 		// Update the velocity, and keep the UFO on screen
@@ -918,7 +918,7 @@ void enemyControl(double tDelta) {
 void playerControl(double tDelta) {
 
 	// Add to the shot delay
-	shotTimer += tDelta;
+	shotTimer += (float) tDelta;
 
 	// Decide if the player can shoot or not
 	if (shotTimer > shotDelay) {
@@ -989,17 +989,17 @@ void fullReset() {
 	clearScene();
 
 	// Reset player position
-	player->position = glm::vec2(0,0);
+	player->setPos(glm::vec2(0,0));
 
 	// Reset power up positions
-	healthUp.position = glm::vec2(1000.0f, 1000.0f);
-	shieldUp.position = glm::vec2(1000.0f, 1000.0f);
+	healthUp.setPos(glm::vec2(1000.0f, 1000.0f));
+	shieldUp.setPos(glm::vec2(1000.0f, 1000.0f));
 
 	// Set player to full health
 	player->setFullHealth();
 
 	// Remove players velocity
-	player->velocity = glm::vec2(0,0);
+	player->resetVel();
 }
 
 // delete objects from array
@@ -1011,7 +1011,7 @@ void deleteUFO(int index) {
 	enemyUFO temp = UFO[index];
 
 	// move the shoot animation off screen
-	UFO[ufoIndex].flare->position = glm::vec2(10000.0f, 10000.0f);
+	UFO[index].getAnim()->setPos(glm::vec2(1000.0f, 1000.0f));
 
 	// For every object starting at the current index
 	for (int i = index; i < ufoIndex - 1; i++) {
@@ -1025,7 +1025,7 @@ void deleteUFO(int index) {
 
 	// Reset the last UFO and move it out of bounds
 	UFO[ufoIndex].makeNew(enemyUFO());
-	UFO[ufoIndex].position = glm::vec2(10000.0f, 10000.0f);
+	UFO[ufoIndex].setPos(glm::vec2(1000.0f, 1000.0f));
 
 	// Tell the engine to delete the temp object (doesnt really work, hence clearScene()
 	deleteObject(&temp);
@@ -1043,7 +1043,7 @@ void deleteBulletFromArray(Bullet* array, int index, int* arrSize) {
 	(*arrSize)--;
 
 	array[*arrSize].makeNew(Bullet());
-	array[*arrSize].position = glm::vec2(10000.0f, 10000.0f);
+	array[*arrSize].setPos(glm::vec2(1000.0f, 1000.0f));
 
 	deleteObject(&temp);
 }
@@ -1060,7 +1060,7 @@ void deleteFromAstroidArray(Astroid* array, int index, int* arrSize) {
 	(*arrSize)--;
 
 	array[*arrSize].makeNew(Astroid());
-	array[*arrSize].position = glm::vec2(10000.0f, 10000.0f);
+	array[*arrSize].setPos(glm::vec2(1000.0f, 1000.0f));
 
 	deleteObject(&temp);
 }

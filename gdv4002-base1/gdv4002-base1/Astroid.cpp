@@ -24,7 +24,7 @@ void Astroid::updateVel(double tDelta) {
 
 void Astroid::rotate(double tDelta) {
 	// Add the rotation speed to the orientation
-	orientation = orientation + (rotSpeed * tDelta);
+	orientation = orientation + (rotSpeed * (float) tDelta);
 }
 
 bool Astroid::addHit() {

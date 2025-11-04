@@ -1,4 +1,35 @@
 #include "GameObject2D.h"
+glm::vec2 GameObject2D::getPos() {
+	return position;
+}
+
+void GameObject2D::setPos(glm::vec2 pos) {
+	position = pos;
+}
+
+float GameObject2D::getOri() {
+	return orientation;
+}
+
+void GameObject2D::setOri(float ori) {
+	orientation = ori;
+}
+
+glm::vec2 GameObject2D::getSize() {
+	return size;
+}
+
+void GameObject2D::setSize(glm::vec2 size) {
+	this->size = size;
+}
+
+int GameObject2D::getTexture() {
+	return textureID;
+}
+
+void GameObject2D::setTexture(int textureID) {
+	this->textureID = textureID;
+}
 
 GameObject2D::GameObject2D() {
 }

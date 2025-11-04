@@ -20,7 +20,7 @@ void animation::updateAnim(double tDelta, glm::vec2 firePos, float ori) {
 	if (playing) {
 
 		// Increment the timer
-		timer += tDelta;
+		timer += (float) tDelta;
 
 		// Check if its time to play the next frame
 		if (timer >= frameDelay) {

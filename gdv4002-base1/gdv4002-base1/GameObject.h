@@ -3,31 +3,26 @@
 #include "GameObject2D.h"
 #include "GraphicsCore.h"
 #include <glm/glm.hpp>
+
+#ifndef GAME_OBJECT_H_
+#define GAME_OBJECT_H_
+
 class GameObject : public GameObject2D
 {
-public:
+protected:
 	// Variables
 	const float PI = 3.141593f;
 	float maxSpeed = 200.0f;
 	glm::vec2 velocity = glm::vec2(0.0f, 0.0f);
 	float rotSpeed = glm::radians(420.0f);
 
+public:
 	// Default constructor
-	GameObject() {};
+	GameObject() : GameObject2D() {};
 
 	// Constructors
-	GameObject(glm::vec2 pos, float ori, int textID, glm::vec2 siz) {
-		position = pos;
-		orientation = ori;
-		size = siz;
-		textureID = textID;
-	};
-	GameObject(GameObject2D* object) {
-		position = object->position;
-		orientation = object->orientation;
-		size = object->size;
-		textureID = object->textureID;
-	};
+	GameObject(glm::vec2 pos, float ori, int textID, glm::vec2 siz) : GameObject2D(pos, ori, siz, textID){};
+	GameObject(GameObject2D* object) : GameObject2D(object->getPos(), object->getOri(), object->getSize(), object->getTexture()){};
 
 	// Functions
 	void updateVel(double tDelta);
@@ -37,3 +32,5 @@ public:
 	void makeNew(GameObject object);
 	bool checkColl(GameObject object);
 };
+
+#endif

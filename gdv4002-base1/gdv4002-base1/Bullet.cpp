@@ -2,10 +2,10 @@
 
 void Bullet::makeNew(GameObject object) {
 	// Asign passed variables to the bullet object
-	position = object.position;
-	orientation = object.orientation;
-	size = object.size;
-	textureID = object.textureID;
+	position = object.getPos();
+	orientation = object.getOri();
+	size = object.getSize();
+	textureID = object.getTexture();
 }
 
 void Bullet::makeNew(Bullet object) {

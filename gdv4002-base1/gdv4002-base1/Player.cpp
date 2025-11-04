@@ -1,14 +1,16 @@
 #include "Player.h"
 
-
+void Player::resetVel() {
+	velocity = glm::vec2(0, 0);
+}
 void Player::turnLeft(double tDelta) {
 	// Add the rotation speed * time delta to the orientation 
-	orientation = orientation + (rotSpeed * tDelta);
+	orientation = orientation + (rotSpeed * (float) tDelta);
 
 }
 void Player::turnRight(double tDelta) {
 	// subtract the rotation speed * time delta to the orientation 
-	orientation = orientation + (-rotSpeed * tDelta);
+	orientation = orientation + (-rotSpeed * (float) tDelta);
 }
 
 void Player::addVelocity(glm::vec2 dir, float mag, double tDelta) {
@@ -67,14 +69,14 @@ GameObject Player::shoot(double tDelta, float speed, int texture, glm::vec2 size
 void Player::setFullHealth() {
 	// Set the health bar to full, and render the health bars correct texture
 	health = 4;
-	healthBar->textureID = healthTextures[health];
+	healthBar->setTexture(healthTextures[health]);
 }
 void Player::addHealth() {
 	// Check that the player isnt at max health
 	if (health < 4) {
 		// If not at max health, add health and render the new health bar
 		health++;
-		healthBar->textureID = healthTextures[health];
+		healthBar->setTexture(healthTextures[health]);
 	}
 }
 
@@ -83,7 +85,7 @@ bool Player::reduceHealth() {
 	if (hasShield) {
 		// remove the sheuld and set the correct health bar texture
 		hasShield = false;
-		healthBar->textureID = healthTextures[health];
+		healthBar->setTexture(healthTextures[health]);
 
 		// return false
 		return false;
@@ -96,14 +98,14 @@ bool Player::reduceHealth() {
 	// If health is 0 (aka player is dead)
 	if (health < 1) {
 		// Render the empty health bar
-		healthBar->textureID = healthTextures[0];
+		healthBar->setTexture(healthTextures[0]);
 
 		// return true
 		return true;
 	}
 	else {
 		// Set the health bar to the correct texture
-		healthBar->textureID = healthTextures[health];
+		healthBar->setTexture(healthTextures[health]);
 
 		// return false
 		return false;
@@ -112,7 +114,7 @@ bool Player::reduceHealth() {
 
 void Player::addSheild() {
 	// Set the health bar etxture to the sheild texture, and set hasShield to true
-	healthBar->textureID = healthTextures[5];
+	healthBar->setTexture(healthTextures[5]);
 	hasShield = true;
 }
 

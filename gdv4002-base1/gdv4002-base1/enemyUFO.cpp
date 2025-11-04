@@ -1,4 +1,27 @@
 #include "enemyUFO.h"
+animation* enemyUFO::getAnim() {
+	return flare;
+}
+
+float enemyUFO::getTimer() { 
+	return ufoShotTimer; 
+}
+
+void enemyUFO::setTimer(float timer) {
+	ufoShotTimer = timer;
+}
+
+void enemyUFO::addToTimer(double tDelta) {
+	ufoShotTimer += (float) tDelta;
+}
+
+void enemyUFO::updateAnim(double tDelta, glm::vec2 firePos, float ori) {
+	flare->updateAnim(tDelta, firePos, ori);
+}
+
+void enemyUFO::playAnim(glm::vec2 pos, float ori, double tDelta) {
+	flare->playAnim(pos, ori, tDelta);
+}
 
 void enemyUFO::makeNew(enemyUFO ufo) {
 	// Set the ufos variables to the passed ufos values
