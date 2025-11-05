@@ -21,8 +21,8 @@ public:
 	GameObject() : GameObject2D() {};
 
 	// Constructors
-	GameObject(glm::vec2 pos, float ori, int textID, glm::vec2 siz) : GameObject2D(pos, ori, siz, textID){};
-	GameObject(GameObject2D* object) : GameObject2D(object->getPos(), object->getOri(), object->getSize(), object->getTexture()){};
+	GameObject(glm::vec2 pos, float ori, int textID, glm::vec2 siz);
+	GameObject(GameObject2D* object);
 
 	// Functions
 	void updateVel(double tDelta);

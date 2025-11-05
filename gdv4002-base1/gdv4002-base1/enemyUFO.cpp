@@ -1,29 +1,38 @@
-#include "enemyUFO.h"
-animation* enemyUFO::getAnim() {
+#include "EnemyUFO.h"
+//Constructors
+EnemyUFO::EnemyUFO(glm::vec2 pos, float ori, int textID, glm::vec2 siz, Animation* shootFlare) : GameObject(pos, ori, textID, siz) {
+	this->flare = shootFlare;
+}
+EnemyUFO::EnemyUFO(GameObject2D* object) : GameObject(object) {
+	this->flare = new Animation();
+}
+
+// Functions
+Animation* EnemyUFO::getAnim() {
 	return flare;
 }
 
-float enemyUFO::getTimer() { 
+float EnemyUFO::getTimer() { 
 	return ufoShotTimer; 
 }
 
-void enemyUFO::setTimer(float timer) {
+void EnemyUFO::setTimer(float timer) {
 	ufoShotTimer = timer;
 }
 
-void enemyUFO::addToTimer(double tDelta) {
+void EnemyUFO::addToTimer(double tDelta) {
 	ufoShotTimer += (float) tDelta;
 }
 
-void enemyUFO::updateAnim(double tDelta, glm::vec2 firePos, float ori) {
+void EnemyUFO::updateAnim(double tDelta, glm::vec2 firePos, float ori) {
 	flare->updateAnim(tDelta, firePos, ori);
 }
 
-void enemyUFO::playAnim(glm::vec2 pos, float ori, double tDelta) {
+void EnemyUFO::playAnim(glm::vec2 pos, float ori, double tDelta) {
 	flare->playAnim(pos, ori, tDelta);
 }
 
-void enemyUFO::makeNew(enemyUFO ufo) {
+void EnemyUFO::makeNew(EnemyUFO ufo) {
 	// Set the ufos variables to the passed ufos values
 	this->position = ufo.position;
 	this->health = ufo.health;
@@ -34,7 +43,7 @@ void enemyUFO::makeNew(enemyUFO ufo) {
 	this->flare = ufo.flare;
 }
 
-GameObject enemyUFO::shoot(double tDelta, float speed, int texture, glm::vec2 size) {
+GameObject EnemyUFO::shoot(double tDelta, float speed, int texture, glm::vec2 size) {
 
 	// Get the current position, and offset it down
 	float fX = position.x;
@@ -48,14 +57,14 @@ GameObject enemyUFO::shoot(double tDelta, float speed, int texture, glm::vec2 si
 	GameObject bullet = GameObject(newPos, ori, texture, size);
 	bullet.setVelocity(bullet.getForwardVector(), speed);
 
-	// Play the muzzle flash animation
+	// Play the muzzle flash Animation
 	flare->playAnim(newPos, ori,tDelta);
 
 	// Return the bullet
 	return bullet;
 }
 
-bool enemyUFO::reduceHealth() {
+bool EnemyUFO::reduceHealth() {
 	// If the UFO is dead
 	if (health < 1) {
 		// return true

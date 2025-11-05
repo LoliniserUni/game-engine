@@ -1,4 +1,28 @@
 #include "Player.h"
+// Constructors
+Player::Player(glm::vec2 pos, float ori, int textID, glm::vec2 siz, GameObject2D* healthBar, int* healthTextures, GameObject2D* shieldBubble) : GameObject(pos, ori, textID, siz) {
+	this->healthBar = healthBar;
+	this->healthTextures = healthTextures;
+	shield = shieldBubble;
+};
+
+Player::Player(GameObject2D* object) : GameObject(object) {
+	healthBar = new GameObject2D();
+	healthTextures = nullptr;
+	shield = nullptr;
+}
+
+void Player::update(double tDelta) {
+	updateVel(tDelta);
+	if (hasShield) shield->setPos(position);
+}
+GameObject2D* Player::getHB() {
+	return healthBar;
+}
+
+GameObject2D* Player::getShield() {
+	return shield;
+}
 
 void Player::resetVel() {
 	velocity = glm::vec2(0, 0);
@@ -30,7 +54,7 @@ void Player::addVelocity(glm::vec2 dir, float mag, double tDelta) {
 	}
 }
 
-GameObject Player::shoot(double tDelta, float speed, int texture, glm::vec2 size, animation* lGun, animation* rGun) {
+GameObject Player::shoot(double tDelta, float speed, int texture, glm::vec2 size, Animation* lGun, Animation* rGun) {
 
 	// Get the current position, and offset it forwards
 	float fX = 5 * cos(orientation) + position.x;
@@ -42,7 +66,7 @@ GameObject Player::shoot(double tDelta, float speed, int texture, glm::vec2 size
 		fX += (2 * cos(orientation + 90 * 180 / PI));
 		fY += (2 * sin(orientation + 90 * 180 / PI));
 
-		// Play the left gun animation at this position
+		// Play the left gun Animation at this position
 		lGun->playAnim(glm::vec2(fX, fY), orientation, tDelta);
 	}
 	else {
@@ -50,7 +74,7 @@ GameObject Player::shoot(double tDelta, float speed, int texture, glm::vec2 size
 		fX += (2 * cos(orientation - 90 * 180 / PI));
 		fY += (2 * sin(orientation - 90 * 180 / PI));
 
-		// Play the right gun animation at this position
+		// Play the right gun Animation at this position
 		rGun->playAnim(glm::vec2(fX, fY), orientation, tDelta);
 	}
 
@@ -86,6 +110,7 @@ bool Player::reduceHealth() {
 		// remove the sheuld and set the correct health bar texture
 		hasShield = false;
 		healthBar->setTexture(healthTextures[health]);
+		shield->setPos(glm::vec2(1000.0f,1000.0f));
 
 		// return false
 		return false;
@@ -114,7 +139,7 @@ bool Player::reduceHealth() {
 
 void Player::addSheild() {
 	// Set the health bar etxture to the sheild texture, and set hasShield to true
-	healthBar->setTexture(healthTextures[5]);
+	shield->setPos(position);
 	hasShield = true;
 }
 

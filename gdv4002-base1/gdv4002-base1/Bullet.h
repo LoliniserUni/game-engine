@@ -16,8 +16,8 @@ public:
 	Bullet() : GameObject() {}
 
 	// Constructors
-	Bullet(glm::vec2 pos, float ori, int textID, glm::vec2 siz) : GameObject(pos, ori, textID, siz) {};
-	Bullet(GameObject2D* object) : GameObject(object) {}
+	Bullet(glm::vec2 pos, float ori, int textID, glm::vec2 siz);
+	Bullet(GameObject2D* object);
 	
 	// Functions
 	void makeNew(GameObject object);

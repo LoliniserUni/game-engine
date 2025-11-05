@@ -1,5 +1,9 @@
 #include "GameObject.h"
+//Constructors
+GameObject::GameObject(GameObject2D* object) : GameObject2D(object->getPos(), object->getOri(), object->getSize(), object->getTexture()) {}
+GameObject::GameObject(glm::vec2 pos, float ori, int textID, glm::vec2 siz) : GameObject2D(pos, ori, siz, textID) {};
 
+//Functions
 bool GameObject::checkColl(GameObject object) {
 	// Get passed objects position
 	float bx = object.position.x;

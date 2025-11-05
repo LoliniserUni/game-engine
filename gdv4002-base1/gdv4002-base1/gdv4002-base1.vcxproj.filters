@@ -51,10 +51,10 @@
     <ClCompile Include="Astroid.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="animation.cpp">
+    <ClCompile Include="Animation.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="enemyUFO.cpp">
+    <ClCompile Include="EnemyUFO.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
@@ -92,10 +92,10 @@
     <ClInclude Include="Astroid.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="animation.h">
+    <ClInclude Include="Animation.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="enemyUFO.h">
+    <ClInclude Include="EnemyUFO.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

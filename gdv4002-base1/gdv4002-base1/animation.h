@@ -1,10 +1,10 @@
 #pragma once
 #include "GameObject.h"
 
-#ifndef ANIMATION_H_
-#define ANIMATION_H_
+#ifndef Animation_H_
+#define Animation_H_
 
-class animation : public GameObject
+class Animation : public GameObject
 {
 private:
 	// Variables
@@ -17,19 +17,13 @@ private:
 
 public:
 	// Default constructor
-	animation() : GameObject() {
-		this->textureIDs = nullptr;
-		totalFrames = 0;
-	}
+	Animation();
 
 	// Constructor
-	animation(float ori, int* textureIDs, int totalFrames, glm::vec2 siz) : GameObject(glm::vec2(1000.0f,1000.0f), ori, textureIDs[0], siz) {
-		this->textureIDs = textureIDs;
-		this->totalFrames = totalFrames;
-	};
+	Animation(float ori, int* textureIDs, int totalFrames, glm::vec2 siz);
 
 	// Functions
-	void makeNew(animation object);
+	void makeNew(Animation object);
 	void updateAnim(double tDelta, glm::vec2 firePos, float ori);
 	void playAnim(glm::vec2 pos, float ori, double tDelta);
 };

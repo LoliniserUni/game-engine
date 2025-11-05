@@ -2,14 +2,15 @@
 #include "Player.h"
 #include "Bullet.h"
 #include "Astroid.h"
-#include "animation.h"
+#include "Animation.h"
 #include <time.h>
 #include <stdlib.h>
-#include "enemyUFO.h"
+#include "EnemyUFO.h"
 
 // Function prototypes
 void myUpdateScene(GLFWwindow*,double);
 void myKeyboardHandler(GLFWwindow*, int, int, int, int);
+void myRenderFunction(GLFWwindow* window);
 
 void playerControl(double);
 void enemyControl(double tDelta);
@@ -44,7 +45,7 @@ void fullReset();
 // Player controls and variables
 Player* player;
 bool wKey, aKey, sKey, dKey,spaceKey = false;
-const float forwardForce = 200.0f;
+const float forwardForce = 100.0f;
 
 const float damageCoolDown = 1.0f;
 float cDamageTimer = 0;
@@ -88,7 +89,7 @@ int medAstroidIndex = 0;
 Astroid* smallAstroidArr = new Astroid[330];
 int smallAstroidIndex = 0;
 
-enemyUFO* UFO = new enemyUFO[10];
+EnemyUFO* UFO = new EnemyUFO[10];
 int ufoIndex = 0;
 
 // Enemy UFO varables and asteroid
@@ -110,13 +111,12 @@ const glm::vec2 BulletSize = glm::vec2(5, 5);
 // Animation objects for both the players muzzle flash and my ufos muzzle flash
 int* blueGunFlareIDs = new int[4];
 int* gunFlareIDs = new int[4];
-animation gunFlareAnimL, gunFlareAnimR;
-animation* UFOgunFlare = new animation[10];
+Animation gunFlareAnimL, gunFlareAnimR;
+Animation* UFOgunFlare = new Animation[10];
 
 
 // Other sprite objects
-int* healthTextIDs = new int[6];
-GameObject2D healthBar;
+int* healthTextIDs = new int[5];
 
 GameObject healthUp, shieldUp;
 const float pUpSpeed = 9.0f;
@@ -129,8 +129,11 @@ float shieldUpTimer = 0.0f;
 // Other variables and consts
 const float PI = 3.141593f;
 
+// score counter
+int score;
+
 int main(void) {
-		
+
 	// Initialise the engine (create window, setup OpenGL backend)
 	int initResult = engineInit("GDV4002 - Applied Maths for Games", 1024, 1024,160.0f);
 
@@ -151,6 +154,10 @@ int main(void) {
 
 	srand((unsigned int) time(0));
 
+	// Set custom render scene (for ui)
+	setRenderFunction(myRenderFunction);
+
+	hideAxisLines();
 	//setting all the various textures 
 	playerTexture = loadTexture("Resources\\Textures\\player1_ship.png", TextureProperties::NearestFilterTexture());
 	bulletTexture = loadTexture("Resources\\Textures\\bullet.png", TextureProperties::NearestFilterTexture());
@@ -173,13 +180,16 @@ int main(void) {
 	healthTextIDs[2] = loadTexture("Resources\\Textures\\Health\\bar2.png", TextureProperties::NearestFilterTexture());
 	healthTextIDs[3] = loadTexture("Resources\\Textures\\Health\\bar3.png", TextureProperties::NearestFilterTexture());
 	healthTextIDs[4] = loadTexture("Resources\\Textures\\Health\\bar4.png", TextureProperties::NearestFilterTexture());
-	healthTextIDs[5] = loadTexture("Resources\\Textures\\Health\\barSheild.png", TextureProperties::NearestFilterTexture());
 
-	UFOtexture = loadTexture("Resources\\Textures\\enemyUFO.png", TextureProperties::NearestFilterTexture());
+	UFOtexture = loadTexture("Resources\\Textures\\EnemyUFO.png", TextureProperties::NearestFilterTexture());
 	ufoBulletText = loadTexture("Resources\\Textures\\enemyBullet.png", TextureProperties::NearestFilterTexture());
 
 	healthUpText = loadTexture("Resources\\Textures\\healthUp.png", TextureProperties::NearestFilterTexture());
 	sheildUpText = loadTexture("Resources\\Textures\\shieldUp.png", TextureProperties::NearestFilterTexture());
+
+	int shieldIDText = loadTexture("Resources\\Textures\\shield.png", TextureProperties::NearestFilterTexture());
+
+	GameObject2D* shield = new GameObject2D(glm::vec2(1000.0f, 1000.0f), 0,glm::vec2(15.0f,15.0f), shieldIDText);
 
 
 	//creating objects, with correct textures and sizes. many i spawn off screen.
@@ -190,10 +200,10 @@ int main(void) {
 	
 	GameObject2D hb = GameObject2D(glm::vec2(-width / 2.0f + 10.0f, height / 2.0f - 2.5f), 0.0f, glm::vec2(20, 5), healthTextIDs[4]);
 
-	player = new Player(glm::vec2(0, 0), 0, playerTexture, glm::vec2(10,10), &hb, healthTextIDs);
+	player = new Player(glm::vec2(0, 0), 0, playerTexture, glm::vec2(10,10), &hb, healthTextIDs, shield);
 
-	gunFlareAnimL.makeNew(animation(0.0f, gunFlareIDs, 4, glm::vec2(3, 3)));
-	gunFlareAnimR.makeNew(animation(0.0f, gunFlareIDs, 4, glm::vec2(3, 3)));
+	gunFlareAnimL.makeNew(Animation(0.0f, gunFlareIDs, 4, glm::vec2(3, 3)));
+	gunFlareAnimR.makeNew(Animation(0.0f, gunFlareIDs, 4, glm::vec2(3, 3)));
 
 	// adding objects to the game
 	addObject("healthBar", &hb);
@@ -244,7 +254,7 @@ void myUpdateScene(GLFWwindow* window, double tDelta) {
 	updateBullets(tDelta);
 	updateUps(tDelta);
 
-	// Update animations
+	// Update Animations
 	updateAnim(tDelta);
 }
 
@@ -310,6 +320,7 @@ void updateBullets(double tDelta) {
 					// If health == 0, delete the UFO.
 					deleteUFO(ufo);
 					kill = true;
+					score += 10;
 				}
 
 				break;
@@ -489,7 +500,7 @@ void updateAnim(double tDelta) {
 	float rX = fX + (2 * cos(player->getOri() - 90 * 180 / PI));
 	float rY = fY + (2 * sin(player->getOri() - 90 * 180 / PI));
 
-	// Update the animations, using its position relitive to the player
+	// Update the Animations, using its position relitive to the player
 	gunFlareAnimL.updateAnim(tDelta, glm::vec2(lX,lY), player->getOri());
 	gunFlareAnimR.updateAnim(tDelta, glm::vec2(rX,rY), player->getOri());
 }
@@ -845,16 +856,16 @@ void spawnUFO(double tDelta, glm::vec2 pos) {
 	if (rand() % 2 < 1) {
 		speed = -speed;
 	}
-	// Create the UFOs muzzle flash animation
-	UFOgunFlare[ufoIndex].makeNew(animation(0.0f, blueGunFlareIDs, 4, glm::vec2(3, 3)));
+	// Create the UFOs muzzle flash Animation
+	UFOgunFlare[ufoIndex].makeNew(Animation(0.0f, blueGunFlareIDs, 4, glm::vec2(3, 3)));
 
 	// Create the new UFO
-	UFO[ufoIndex].makeNew(enemyUFO(pos, 0, UFOtexture, glm::vec2(10.0f, 10.0f), &UFOgunFlare[ufoIndex]));
+	UFO[ufoIndex].makeNew(EnemyUFO(pos, 0, UFOtexture, glm::vec2(10.0f, 10.0f), &UFOgunFlare[ufoIndex]));
 
 	// Add the UFO to the scene
-	addObject("enemyUFO", &UFO[ufoIndex]);
+	addObject("EnemyUFO", &UFO[ufoIndex]);
 
-	// Add the muzzle flash animation to the scene
+	// Add the muzzle flash Animation to the scene
 	addObject("UFOflareAnimation", &UFOgunFlare[ufoIndex]);
 
 	// Apply the UFOs velocity
@@ -893,7 +904,7 @@ void enemyControl(double tDelta) {
 		// Get its Y value and offset it down
 		float fY = UFO[i].getPos().y - 2.5f;
 
-		// update the animation at the new position
+		// update the Animation at the new position
 		UFO[i].updateAnim(tDelta, glm::vec2(fX,fY), UFO[i].getOri());
 
 		// Add to the shot delay
@@ -952,7 +963,7 @@ void playerControl(double tDelta) {
 	}
 	
 	// Update the players position
-	player->updateVel(tDelta);
+	player->update(tDelta);
 }
 
 // clear scene (clear objects from the engine)
@@ -974,7 +985,7 @@ void clearScene() {
 	smallAstroidIndex = 0;
 
 	// Delete all UFOs
-	deleteMatchingObjects("enemyUFO");
+	deleteMatchingObjects("EnemyUFO");
 	ufoIndex = 0;
 }
 
@@ -1008,9 +1019,9 @@ void fullReset() {
 void deleteUFO(int index) {
 
 	// Create temp object
-	enemyUFO temp = UFO[index];
+	EnemyUFO temp = UFO[index];
 
-	// move the shoot animation off screen
+	// move the shoot Animation off screen
 	UFO[index].getAnim()->setPos(glm::vec2(1000.0f, 1000.0f));
 
 	// For every object starting at the current index
@@ -1024,7 +1035,7 @@ void deleteUFO(int index) {
 	ufoIndex--;
 
 	// Reset the last UFO and move it out of bounds
-	UFO[ufoIndex].makeNew(enemyUFO());
+	UFO[ufoIndex].makeNew(EnemyUFO());
 	UFO[ufoIndex].setPos(glm::vec2(1000.0f, 1000.0f));
 
 	// Tell the engine to delete the temp object (doesnt really work, hence clearScene()
@@ -1095,6 +1106,42 @@ void shoot(double tDelta) {
 
 	// Inceremnt the bullet index.
 	bulletIndex++;
+}
+
+// Custom render fucntion
+void myRenderFunction(GLFWwindow* window) {
+	// render every single game object
+
+	player->render();
+	player->getShield()->render();
+
+	for (int i = 0; i < bulletIndex; i++) {
+		bullet[i].render();
+	}
+	for (int i = 0; i < smallAstroidIndex; i++) {
+		smallAstroidArr[i].render();
+	}
+	for (int i = 0; i < medAstroidIndex; i++) {
+		medAstroidArr[i].render();
+	}
+	for (int i = 0; i < bigAstroidIndex; i++) {
+		bigAstroidArr[i].render();
+	}
+	for (int i = 0; i < ufoIndex; i++) {
+		UFO[i].render();
+		UFO[i].getAnim()->render();
+	}
+	for (int i = 0; i < enemyBulletIndex; i++) {
+		enemyBullet[i].render();
+	}
+
+	healthUp.render();
+	shieldUp.render();
+
+	gunFlareAnimL.render();
+	gunFlareAnimR.render();
+
+	player->getHB()->render();
 }
 
 //Keyboard handler

@@ -1,6 +1,18 @@
-#include "animation.h"
+#include "Animation.h"
+// Constructors
+Animation::Animation() : GameObject() {
+	this->textureIDs = nullptr;
+	totalFrames = 0;
+}
 
-void animation::makeNew(animation object) {
+// Constructor
+Animation::Animation(float ori, int* textureIDs, int totalFrames, glm::vec2 siz) : GameObject(glm::vec2(1000.0f, 1000.0f), ori, textureIDs[0], siz) {
+	this->textureIDs = textureIDs;
+	this->totalFrames = totalFrames;
+};
+
+//Functions
+void Animation::makeNew(Animation object) {
 
 	// Set all variables to be the passed object
 	this->textureIDs = object.textureIDs;
@@ -14,9 +26,9 @@ void animation::makeNew(animation object) {
 	this->size = object.size;
 }
 
-void animation::updateAnim(double tDelta, glm::vec2 firePos, float ori) {
+void Animation::updateAnim(double tDelta, glm::vec2 firePos, float ori) {
 
-	// If the animation is playing
+	// If the Animation is playing
 	if (playing) {
 
 		// Increment the timer
@@ -37,15 +49,15 @@ void animation::updateAnim(double tDelta, glm::vec2 firePos, float ori) {
 				// Set playing to false
 				playing = false;
 
-				// Move the animation out of bounds
+				// Move the Animation out of bounds
 				this->position = glm::vec2(1000.0f, 1000.0f);
 
-				//No need to set the active frame to the first, as the animation is off screen
+				//No need to set the active frame to the first, as the Animation is off screen
 				
 				//Exit
 				return;
 			}
-			// Move the animation to the current position
+			// Move the Animation to the current position
 			this->position = firePos;
 
 			// Rotate the orientation to the current orientation
@@ -62,9 +74,9 @@ void animation::updateAnim(double tDelta, glm::vec2 firePos, float ori) {
 		//do nothing
 	}
 }
-void animation::playAnim(glm::vec2 pos, float ori, double tDelta) {
+void Animation::playAnim(glm::vec2 pos, float ori, double tDelta) {
 
-	// Bring the animation to the current position
+	// Bring the Animation to the current position
 	this->position = pos;
 
 	// Set orientation to the current orientation

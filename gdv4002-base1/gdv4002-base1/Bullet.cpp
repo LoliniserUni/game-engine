@@ -1,5 +1,9 @@
 #include "Bullet.h"
+// constructor
+Bullet::Bullet(glm::vec2 pos, float ori, int textID, glm::vec2 siz) : GameObject(pos, ori, textID, siz) {};
+Bullet::Bullet(GameObject2D* object) : GameObject(object) {}
 
+//Function
 void Bullet::makeNew(GameObject object) {
 	// Asign passed variables to the bullet object
 	position = object.getPos();
