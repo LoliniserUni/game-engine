@@ -43,6 +43,8 @@ void clearScene();
 void fullReset();
 void releaseMemory();
 
+void spawnBackgrounfParticles(double tDelta, glm::vec2 pos, int index);
+
 // Player controls and variables
 Player* player = nullptr;
 
@@ -110,6 +112,10 @@ int maxUFO = (int)(ufoPerLevel * maxLevel);
 EnemyUFO* UFO = new EnemyUFO[maxUFO];
 int ufoIndex = 0;
 
+GameObject2D earth, background;
+
+GameObject* backgroundParticles = new GameObject[100];
+
 // Enemy UFO varables and asteroid
 const float ufoShotDelay = 0.5f;
 const float ufoSpeed = 50.0f;
@@ -123,7 +129,7 @@ const glm::vec4 hitBG = glm::vec4(1.0f, 0.0f, 0.0f, 1.0f);
 const glm::vec4 normalBG = glm::vec4(0.0f, 0.0f, 0.0f, 1.0f);
 
 // textures
-int bulletTexture, playerTexture, astroidBigTexture, astroidMediumTexture, astroidSmallTexture, UFOtexture, ufoBulletText, healthUpText, sheildUpText, fireRateUpText, trippleShotText, cloverText;
+int bulletTexture, playerTexture, astroidBigTexture, astroidMediumTexture, astroidSmallTexture, UFOtexture, ufoBulletText, healthUpText, sheildUpText, fireRateUpText, trippleShotText, cloverText, startText;
 const glm::vec2 BulletSize = glm::vec2(5, 5);
 
 // Animation objects for both the players muzzle flash and my ufos muzzle flash
@@ -211,6 +217,12 @@ int main(void) {
 	trippleShotText = loadTexture("Resources\\Textures\\trippleShot.png", TextureProperties::NearestFilterTexture());
 	cloverText = loadTexture("Resources\\Textures\\clover.png", TextureProperties::NearestFilterTexture());
 
+	int earthText = loadTexture("Resources\\Textures\\earth.png", TextureProperties::NearestFilterTexture());
+	earth = GameObject2D(glm::vec2(0, -width/2.0f), 0, glm::vec2(120.0f, 120.0f), earthText);
+
+	int bgText = loadTexture("Resources\\Textures\\background.png", TextureProperties::NearestFilterTexture());
+	background = GameObject2D(glm::vec2(0, 0), 0, glm::vec2(160.0f, 160.0f), bgText);
+
 	int shieldIDText = loadTexture("Resources\\Textures\\shield.png", TextureProperties::NearestFilterTexture());
 
 	GameObject2D* shield = new GameObject2D(glm::vec2(1000.0f, 1000.0f), 0,glm::vec2(15.0f,15.0f), shieldIDText);
@@ -245,6 +257,28 @@ int main(void) {
 	setKeyboardHandler(myKeyboardHandler);
 	
 	setUpdateFunction(myUpdateScene);
+
+	startText = loadTexture("Resources\\Textures\\star.png", TextureProperties::NearestFilterTexture());
+	for (int i = 0; i < 100; i++) {
+
+		float xPos = 0;
+		float yPos = 0;
+
+		if (rand() % 2 < 1) {
+
+			xPos = rand() % (int)width - width / 2.0f;
+
+			yPos = height / 2.0f + 10.0f;
+		}
+		else {
+
+			yPos = rand() % (int)height - height / 2.0f;
+
+			xPos = width / 2.0f + 10.0f;
+		}
+
+		spawnBackgrounfParticles(0, glm::vec2(xPos, yPos), i);
+	}
 
 	// Enter main loop - this handles update and render calls
 	engineMainLoop();
@@ -283,6 +317,13 @@ void myUpdateScene(GLFWwindow* window, double tDelta) {
 
 	// Update Animations
 	updateAnim(tDelta);
+
+	earth.setOri(earth.getOri() + 0.005f * tDelta);
+
+	for (int i = 0; i < 100; i++) {
+		backgroundParticles[i].updateVel(tDelta);
+		backgroundParticles[i].keepOnScreen(width / 2.0f, height / 2.0f);
+	}
 }
 
 //update functions :D
@@ -1003,7 +1044,7 @@ void spawnMedAstroid(double tDelta, glm::vec2 pos) {
 	medAstroidIndex++;
 }
 
-void spawnSmallAstroid(double tDeltam, glm::vec2 pos) {
+void spawnSmallAstroid(double tDelta, glm::vec2 pos) {
 
 	float ori = glm::radians(rand() % 360 * 1.0f);
 
@@ -1020,6 +1061,25 @@ void spawnSmallAstroid(double tDeltam, glm::vec2 pos) {
 	smallAstroidArr[smallAstroidIndex].setVelocity(smallAstroidArr[smallAstroidIndex].getForwardVector(), smallAstroidSpeed);
 
 	smallAstroidIndex++;
+}
+
+void spawnBackgrounfParticles(double tDelta, glm::vec2 pos, int index) {
+
+	float ori = glm::radians(rand() % 360 * 1.0f);
+
+	float rotSpeed = rand() % 50 + 100 * 1.0f;
+
+	if (rand() % 2 < 1) {
+		rotSpeed *= -1.0f;
+	}
+
+	float size = (rand() % 100)/180.0f;
+
+	float speed = rand() % 20 + 5;
+
+	backgroundParticles[index].makeNew(Astroid(pos, ori, startText, glm::vec2(size, size), glm::radians(rotSpeed), 1));
+
+	backgroundParticles[index].setVelocity(backgroundParticles[index].getForwardVector(), speed);
 }
 
 void spawnUFO(double tDelta, glm::vec2 pos) {
@@ -1299,6 +1359,14 @@ void shoot(double tDelta) {
 // Custom render fucntion
 void myRenderFunction(GLFWwindow* window) {
 
+	background.render();
+
+	for (int i = 0; i < 50; i++) {
+		backgroundParticles[i].render();
+	}
+
+	earth.render();
+
 	// render every single game object
 	player->render();
 
@@ -1324,6 +1392,10 @@ void myRenderFunction(GLFWwindow* window) {
 
 	if (clover.getPos().x < 100.0f) {
 		clover.render();
+	}
+
+	for (int i = 50; i < 75; i++) {
+		backgroundParticles[i].render();
 	}
 
 	for (int i = 0; i < bulletIndex; i++) {
@@ -1357,6 +1429,10 @@ void myRenderFunction(GLFWwindow* window) {
 
 	if (gunFlareAnimR.getPos().x < 100) {
 		gunFlareAnimR.render();
+	}
+
+	for (int i = 75; i < 100; i++) {
+		backgroundParticles[i].render();
 	}
 
 	player->getHB()->render();
