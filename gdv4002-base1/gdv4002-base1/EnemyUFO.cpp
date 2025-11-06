@@ -6,7 +6,6 @@ EnemyUFO::EnemyUFO(glm::vec2 pos, float ori, int textID, glm::vec2 siz, Animatio
 EnemyUFO::EnemyUFO(GameObject2D* object) : GameObject(object) {
 	this->flare = new Animation();
 }
-
 // Functions
 Animation* EnemyUFO::getAnim() {
 	return flare;

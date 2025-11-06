@@ -109,32 +109,31 @@ bool Player::reduceHealth() {
 	if (hasShield) {
 		// remove the sheuld and set the correct health bar texture
 		hasShield = false;
-		healthBar->setTexture(healthTextures[health]);
 		shield->setPos(glm::vec2(1000.0f,1000.0f));
-
-		// return false
-		return false;
 	}
 	else {
 		// Remove health
 		health--;
 	}
-	
+
 	// If health is 0 (aka player is dead)
 	if (health < 1) {
 		// Render the empty health bar
 		healthBar->setTexture(healthTextures[0]);
-
+		health = 0;
 		// return true
 		return true;
 	}
 	else {
-		// Set the health bar to the correct texture
-		healthBar->setTexture(healthTextures[health]);
-
-		// return false
-		return false;
+		
+		// Do nothung
 	}
+
+	// Set the health bar to the correct texture
+	healthBar->setTexture(healthTextures[health]);
+
+	// return false
+	return false;
 }
 
 void Player::addSheild() {

@@ -26,7 +26,8 @@ public:
 	// Constructors
 	EnemyUFO(glm::vec2 pos, float ori, int textID, glm::vec2 siz, Animation* shootFlare);
 	EnemyUFO(GameObject2D* object);
-	
+
+	// Functions
 	Animation* getAnim();
 	float getTimer();
 	void setTimer(float timer);

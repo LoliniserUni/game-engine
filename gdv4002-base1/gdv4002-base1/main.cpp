@@ -41,6 +41,7 @@ void checkCompletion();
 
 void clearScene();
 void fullReset();
+void releaseMemory();
 
 // Player controls and variables
 Player* player;
@@ -74,22 +75,28 @@ const int saPerLevel = 2;
 const float ufoPerLevel = 0.2f;
 
 // Object arrays, variable size is set the the maximum of that object that could possibly be in my scene at a given time
-Bullet* bullet = new Bullet[10];
+int maxBul = 8;
+Bullet* bullet = new Bullet[maxBul];
 int bulletIndex = 0;
 
-Bullet* enemyBullet = new Bullet[10];
+int maxEnemyBul = 6;
+Bullet* enemyBullet = new Bullet[6];
 int enemyBulletIndex = 0;
 
-Astroid* bigAstroidArr = new Astroid[30];
+int maxBAs = maxLevel * baPerLevel;
+Astroid* bigAstroidArr = new Astroid[maxBAs];
 int bigAstroidIndex = 0;
 
-Astroid* medAstroidArr = new Astroid[90];
+int maxMAs = maxBAs + maPerLevel * maxLevel;
+Astroid* medAstroidArr = new Astroid[maxMAs];
 int medAstroidIndex = 0;
 
-Astroid* smallAstroidArr = new Astroid[330];
+int maxSAs = maxMAs + saPerLevel * maxLevel;
+Astroid* smallAstroidArr = new Astroid[maxSAs];
 int smallAstroidIndex = 0;
 
-EnemyUFO* UFO = new EnemyUFO[10];
+int maxUFO = (int)(ufoPerLevel * maxLevel);
+EnemyUFO* UFO = new EnemyUFO[maxUFO];
 int ufoIndex = 0;
 
 // Enemy UFO varables and asteroid
@@ -112,7 +119,7 @@ const glm::vec2 BulletSize = glm::vec2(5, 5);
 int* blueGunFlareIDs = new int[4];
 int* gunFlareIDs = new int[4];
 Animation gunFlareAnimL, gunFlareAnimR;
-Animation* UFOgunFlare = new Animation[10];
+Animation* UFOgunFlare = new Animation[maxUFO];
 
 
 // Other sprite objects
@@ -205,17 +212,6 @@ int main(void) {
 	gunFlareAnimL.makeNew(Animation(0.0f, gunFlareIDs, 4, glm::vec2(3, 3)));
 	gunFlareAnimR.makeNew(Animation(0.0f, gunFlareIDs, 4, glm::vec2(3, 3)));
 
-	// adding objects to the game
-	addObject("healthBar", &hb);
-
-	addObject("gunFlareAnim", &gunFlareAnimL);
-	addObject("gunFlareAnim", &gunFlareAnimR);
-
-	addObject("Player", player);
-
-	addObject("shieldUp", &shieldUp);
-	addObject("healthUp", &healthUp);
-	
 	//set keyboard handler and update fuction
 	setKeyboardHandler(myKeyboardHandler);
 	
@@ -226,6 +222,8 @@ int main(void) {
 
 	// When we quit (close window for example), clean up engine resources
 	engineShutdown();
+
+	delete shield;
 
 	// return success :)
 	return 0;
@@ -801,9 +799,6 @@ void spawnBigAstroid(double tDelta, glm::vec2 pos) {
 	// Create a new asteroid in the array
 	bigAstroidArr[bigAstroidIndex].makeNew(Astroid(pos, ori, astroidBigTexture, glm::vec2(size, size), glm::radians(rotSpeed), 0));
 
-	// Add the object to the scene
-	addObject("bigAstroid", &bigAstroidArr[bigAstroidIndex]);
-
 	// Set the asteroids velocity
 	bigAstroidArr[bigAstroidIndex].setVelocity(bigAstroidArr[bigAstroidIndex].getForwardVector(), bigAstroidSpeed);
 
@@ -825,8 +820,6 @@ void spawnMedAstroid(double tDelta, glm::vec2 pos) {
 
 	medAstroidArr[medAstroidIndex].makeNew(Astroid(pos, ori, astroidBigTexture, glm::vec2(size, size), glm::radians(rotSpeed), 1));
 
-	addObject("medAstroid", &medAstroidArr[medAstroidIndex]);
-
 	medAstroidArr[medAstroidIndex].setVelocity(medAstroidArr[medAstroidIndex].getForwardVector(), medAstroidSpeed);
 
 	medAstroidIndex++;
@@ -846,8 +839,6 @@ void spawnSmallAstroid(double tDeltam, glm::vec2 pos) {
 
 	smallAstroidArr[smallAstroidIndex].makeNew(Astroid(pos, ori, astroidBigTexture, glm::vec2(size, size), glm::radians(rotSpeed), 2));
 
-	addObject("smallAstroid", &smallAstroidArr[smallAstroidIndex]);
-
 	smallAstroidArr[smallAstroidIndex].setVelocity(smallAstroidArr[smallAstroidIndex].getForwardVector(), smallAstroidSpeed);
 
 	smallAstroidIndex++;
@@ -866,12 +857,6 @@ void spawnUFO(double tDelta, glm::vec2 pos) {
 
 	// Create the new UFO
 	UFO[ufoIndex].makeNew(EnemyUFO(pos, 0, UFOtexture, glm::vec2(10.0f, 10.0f), &UFOgunFlare[ufoIndex]));
-
-	// Add the UFO to the scene
-	addObject("EnemyUFO", &UFO[ufoIndex]);
-
-	// Add the muzzle flash Animation to the scene
-	addObject("UFOflareAnimation", &UFOgunFlare[ufoIndex]);
 
 	// Apply the UFOs velocity
 	UFO[ufoIndex].setVelocity(UFO[ufoIndex].getForwardVector(), speed);
@@ -974,23 +959,26 @@ void playerControl(double tDelta) {
 // clear scene (clear objects from the engine)
 void clearScene() {
 	// Delete all bullets
-	deleteMatchingObjects("bullet");
+	bullet = new Bullet[maxBul];
 	bulletIndex = 0;
 
+	enemyBullet = new Bullet[maxEnemyBul];
+	enemyBulletIndex = 0;
+
 	// Delete all big asteroids
-	deleteMatchingObjects("bigAstroid");
+	bigAstroidArr = new Astroid[maxBAs];
 	bigAstroidIndex = 0;
 
 	// Delete all medium asteroids
-	deleteMatchingObjects("medAstroid");
+	medAstroidArr = new Astroid[maxMAs];
 	medAstroidIndex = 0;
 
 	// Delete all small asteroids
-	deleteMatchingObjects("smallAstroid");
+	smallAstroidArr = new Astroid[maxSAs];
 	smallAstroidIndex = 0;
 
 	// Delete all UFOs
-	deleteMatchingObjects("EnemyUFO");
+	UFO = new EnemyUFO[maxUFO];
 	ufoIndex = 0;
 }
 
@@ -1026,9 +1014,6 @@ void fullReset() {
 // The following applies to all delete functions
 void deleteUFO(int index) {
 
-	// Create temp object
-	EnemyUFO temp = UFO[index];
-
 	// move the shoot Animation off screen
 	UFO[index].getAnim()->setPos(glm::vec2(1000.0f, 1000.0f));
 
@@ -1045,15 +1030,10 @@ void deleteUFO(int index) {
 	// Reset the last UFO and move it out of bounds
 	UFO[ufoIndex].makeNew(EnemyUFO());
 	UFO[ufoIndex].setPos(glm::vec2(1000.0f, 1000.0f));
-
-	// Tell the engine to delete the temp object (doesnt really work, hence clearScene()
-	deleteObject(&temp);
 }
 
 void deleteBulletFromArray(Bullet* array, int index, int* arrSize) {
 	
-	Bullet temp = array[index];
-
 	for (int i = index; i < (*arrSize) - 1; i++) {
 
 		array[i].makeNew(array[i + 1]);
@@ -1063,14 +1043,10 @@ void deleteBulletFromArray(Bullet* array, int index, int* arrSize) {
 
 	array[*arrSize].makeNew(Bullet());
 	array[*arrSize].setPos(glm::vec2(1000.0f, 1000.0f));
-
-	deleteObject(&temp);
 }
 
 void deleteFromAstroidArray(Astroid* array, int index, int* arrSize) {
 	
-	Astroid temp = array[index];
-
 	for (int i = index; i < (*arrSize) - 1; i++) {
 
 		array[i].makeNew(array[i + 1]);
@@ -1080,8 +1056,6 @@ void deleteFromAstroidArray(Astroid* array, int index, int* arrSize) {
 
 	array[*arrSize].makeNew(Astroid());
 	array[*arrSize].setPos(glm::vec2(1000.0f, 1000.0f));
-
-	deleteObject(&temp);
 }
 
 // shoot functions
@@ -1091,9 +1065,6 @@ void enemyShoot(double tDelta, int index) {
 
 	// Apply its velocity
 	enemyBullet[enemyBulletIndex].setVelocity(enemyBullet[enemyBulletIndex].getForwardVector(), bulletMag);
-
-	// Add the bullet to the scene
-	addObject("bullet", &enemyBullet[enemyBulletIndex]);
 
 	// Increment the enemy Bullet index
 	enemyBulletIndex++;
@@ -1109,9 +1080,6 @@ void shoot(double tDelta) {
 	// Set its velocity
 	bullet[bulletIndex].setVelocity(bullet[bulletIndex].getForwardVector(), bulletMag);
 
-	// Add the bullet to the scene
-	addObject("bullet", &bullet[bulletIndex]);
-
 	// Inceremnt the bullet index.
 	bulletIndex++;
 }
@@ -1119,8 +1087,8 @@ void shoot(double tDelta) {
 // Custom render fucntion
 void myRenderFunction(GLFWwindow* window) {
 	// render every single game object
-
 	player->render();
+
 	if (player->getShield()->getPos().x < 100) {
 		player->getShield()->render();
 	}
@@ -1128,19 +1096,24 @@ void myRenderFunction(GLFWwindow* window) {
 	for (int i = 0; i < bulletIndex; i++) {
 		bullet[i].render();
 	}
+
 	for (int i = 0; i < smallAstroidIndex; i++) {
 		smallAstroidArr[i].render();
 	}
+
 	for (int i = 0; i < medAstroidIndex; i++) {
 		medAstroidArr[i].render();
 	}
+
 	for (int i = 0; i < bigAstroidIndex; i++) {
 		bigAstroidArr[i].render();
 	}
+
 	for (int i = 0; i < ufoIndex; i++) {
 		UFO[i].render();
 		UFO[i].getAnim()->render();
 	}
+
 	for (int i = 0; i < enemyBulletIndex; i++) {
 		enemyBullet[i].render();
 	}
@@ -1148,17 +1121,34 @@ void myRenderFunction(GLFWwindow* window) {
 	if (healthUp.getPos().x < 100) {
 		healthUp.render();
 	}
+
 	if (shieldUp.getPos().x < 100) {
 		shieldUp.render();
 	}
+
 	if (gunFlareAnimL.getPos().x < 100) {
 		gunFlareAnimL.render();
 	}
+
 	if (gunFlareAnimR.getPos().x < 100) {
 		gunFlareAnimR.render();
 	}
 
 	player->getHB()->render();
+}
+
+void releaseMemory() {
+	delete[] bigAstroidArr;
+	delete[] medAstroidArr;
+	delete[] smallAstroidArr;
+	delete[] bullet;
+	delete[] enemyBullet;
+	delete[] UFO;
+	delete[] blueGunFlareIDs;
+	delete[] gunFlareIDs;
+	delete[] UFOgunFlare;
+	delete[] healthTextIDs;
+	delete player;
 }
 
 //Keyboard handler
@@ -1173,13 +1163,8 @@ void myKeyboardHandler(GLFWwindow* window, int key, int scancode, int action, in
 		case GLFW_KEY_ESCAPE:
 			// if escape was pressed
 			
-			// Clear the errays
-			delete[] bigAstroidArr;
-			delete[] medAstroidArr;
-			delete[] smallAstroidArr;
-			delete[] bullet;
-			delete[] enemyBullet;
-			delete[] UFO;
+			// Clear the the memory
+			releaseMemory();
 
 			// Close the window
 			glfwSetWindowShouldClose(window, true);
