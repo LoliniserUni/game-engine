@@ -437,13 +437,13 @@ void updateBullets(double tDelta) {
 
 		// If a kill occured 
 		if (kill) {
-			int chance = rand() % 100 + 1;
+			
 			// Check if the health postion is already active (only one at a time), the following applies for all power ups.
 			if (healthUp.getPos().x < 100) {
 				//do nothing
 			}
 			else {
-
+				int chance = rand() % 100 + 1;
 				// 2% chance to spawn the health power up
 				if (chance < 3) {
 
@@ -459,7 +459,7 @@ void updateBullets(double tDelta) {
 				//do nothing
 			}
 			else {
-
+				int chance = rand() % 100 + 1;
 				if (chance < 2) {
 
 					spawnPUp(&shieldUp, hitPos);
@@ -471,6 +471,7 @@ void updateBullets(double tDelta) {
 				// do nothing
 			}
 			else {
+				int chance = rand() % 100 + 1;
 				if (chance < 2) {
 
 					spawnPUp(&fireRateUp, hitPos);
@@ -1067,6 +1068,7 @@ void fullReset() {
 	// Reset power up positions
 	healthUp.setPos(glm::vec2(1000.0f, 1000.0f));
 	shieldUp.setPos(glm::vec2(1000.0f, 1000.0f));
+	fireRateUp.setPos(glm::vec2(1000.0f, 1000.0f));
 
 	// Set player to full health
 	player->setFullHealth();
