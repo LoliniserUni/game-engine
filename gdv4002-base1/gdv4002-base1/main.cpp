@@ -345,6 +345,7 @@ void updateBullets(double tDelta) {
 				// Reduce the asteroids health.
 				if (bigAstroidArr[ba].addHit()) {
 
+					score += 5;
 					//if health == 0; spawn spaller asteroids (only aplicable for big and med asteroids)
 					spawnMedAstroid(tDelta, bigAstroidArr[ba].getPos());
 					spawnMedAstroid(tDelta, bigAstroidArr[ba].getPos());
@@ -374,6 +375,8 @@ void updateBullets(double tDelta) {
 
 				if (medAstroidArr[ma].addHit()) {
 
+					score += 2;
+
 					spawnSmallAstroid(tDelta, medAstroidArr[ma].getPos());
 					spawnSmallAstroid(tDelta, medAstroidArr[ma].getPos());
 					spawnSmallAstroid(tDelta, medAstroidArr[ma].getPos());
@@ -399,6 +402,8 @@ void updateBullets(double tDelta) {
 				hitPos = smallAstroidArr[sa].getPos();
 
 				if (smallAstroidArr[sa].addHit()) {
+
+					score += 1;
 
 					smallAstroidArr[sa].makeNew(new Astroid());
 					smallAstroidArr[sa].getPos() = glm::vec2(1000.0f, 1000.0f);
@@ -992,6 +997,9 @@ void clearScene() {
 // Reset players health and position, and clear the scene
 void fullReset() {
 
+	std::cout << "Your final score was: " << score;
+
+	score = 0;
 	// Reset level 
 	currentLevel = 1;
 	levelInProgress = false;
@@ -1113,7 +1121,9 @@ void myRenderFunction(GLFWwindow* window) {
 	// render every single game object
 
 	player->render();
-	player->getShield()->render();
+	if (player->getShield()->getPos().x < 100) {
+		player->getShield()->render();
+	}
 
 	for (int i = 0; i < bulletIndex; i++) {
 		bullet[i].render();
@@ -1135,11 +1145,18 @@ void myRenderFunction(GLFWwindow* window) {
 		enemyBullet[i].render();
 	}
 
-	healthUp.render();
-	shieldUp.render();
-
-	gunFlareAnimL.render();
-	gunFlareAnimR.render();
+	if (healthUp.getPos().x < 100) {
+		healthUp.render();
+	}
+	if (shieldUp.getPos().x < 100) {
+		shieldUp.render();
+	}
+	if (gunFlareAnimL.getPos().x < 100) {
+		gunFlareAnimL.render();
+	}
+	if (gunFlareAnimR.getPos().x < 100) {
+		gunFlareAnimR.render();
+	}
 
 	player->getHB()->render();
 }
