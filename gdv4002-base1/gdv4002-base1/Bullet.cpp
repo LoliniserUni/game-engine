@@ -10,6 +10,7 @@ void Bullet::makeNew(GameObject object) {
 	orientation = object.getOri();
 	size = object.getSize();
 	textureID = object.getTexture();
+	checkSize = object.getCheckSize();
 }
 
 void Bullet::makeNew(Bullet object) {
@@ -19,6 +20,7 @@ void Bullet::makeNew(Bullet object) {
 	size = object.size;
 	textureID = object.textureID;
 	velocity = object.velocity;
+	checkSize = object.checkSize;
 }
 
 bool Bullet::deleteOffScreen(float viewWidth, float viewHeight) {

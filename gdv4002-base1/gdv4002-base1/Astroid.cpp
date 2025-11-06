@@ -25,7 +25,7 @@ Astroid::Astroid(GameObject2D* object) : GameObject(object) {
 };
 
 // Functions
-void Astroid::makeNew(Astroid object) {
+void Astroid::makeNew(Astroid object){
 	// Set all members to passed objects values
  	position = object.position;
 	orientation = object.orientation;
@@ -35,6 +35,7 @@ void Astroid::makeNew(Astroid object) {
 	rotSpeed = object.rotSpeed;
 	type = object.type;
 	hits = object.hits;
+	checkSize = object.checkSize;
 }
 
 

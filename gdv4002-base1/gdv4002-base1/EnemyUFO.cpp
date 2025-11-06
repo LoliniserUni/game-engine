@@ -40,6 +40,7 @@ void EnemyUFO::makeNew(EnemyUFO ufo) {
 	this->textureID = ufo.textureID;
 	this->size = ufo.size;
 	this->flare = ufo.flare;
+	checkSize = ufo.checkSize;
 }
 
 GameObject EnemyUFO::shoot(double tDelta, float speed, int texture, glm::vec2 size) {

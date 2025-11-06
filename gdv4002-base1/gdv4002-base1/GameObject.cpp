@@ -1,10 +1,19 @@
 #include "GameObject.h"
 //Constructors
-GameObject::GameObject(GameObject2D* object) : GameObject2D(object->getPos(), object->getOri(), object->getSize(), object->getTexture()) {}
-GameObject::GameObject(glm::vec2 pos, float ori, int textID, glm::vec2 siz) : GameObject2D(pos, ori, siz, textID) {};
+GameObject::GameObject(GameObject2D* object) : GameObject2D(object->getPos(), object->getOri(), object->getSize(), object->getTexture()) {
+	checkSize = abs(object->getSize().x / 2.0f) * abs(object->getSize().x / 2.0f);
+}
+GameObject::GameObject(glm::vec2 pos, float ori, int textID, glm::vec2 siz) : GameObject2D(pos, ori, siz, textID) {
+	checkSize = abs(siz.x / 2.0f) * abs(siz.x / 2.0f);
+};
+
+float GameObject::getCheckSize() {
+	return checkSize;
+}
 
 //Functions
 bool GameObject::checkColl(GameObject object) {
+
 	// Get passed objects position
 	float bx = object.position.x;
 	float by = object.position.y;
@@ -13,12 +22,15 @@ bool GameObject::checkColl(GameObject object) {
 	float ax = position.x;
 	float ay = position.y;
 
-	// Get the distance between the 2 2objects
-	float xDif = abs(bx - ax);
-	float yDif = abs(by - ay);
+	float xDist = abs(ax - bx);
+	float yDist = abs(ay - by);
+
+	float distance = xDist * xDist + yDist * yDist;
+
+	return (distance < checkSize);
 
 	// Return true if the distance between the 2 points is smaller than this objects size (ie, the passed objects centre is within this objects size)
-	return (xDif < size.x / 2.0f && yDif < size.y / 2.0f);
+	//return (xDif < size.x / 2.0f && yDif < size.y / 2.0f);
 }
 
 void GameObject::setVelocity(glm::vec2 dir, float speed) {
@@ -37,6 +49,7 @@ void GameObject::makeNew(GameObject object) {
 	orientation = object.orientation;
 	size = object.size;
 	textureID = object.textureID;
+	checkSize = object.checkSize;
 }
 
 glm::vec2 GameObject::getForwardVector() {

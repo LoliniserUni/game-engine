@@ -44,7 +44,8 @@ void fullReset();
 void releaseMemory();
 
 // Player controls and variables
-Player* player;
+Player* player = nullptr;
+
 bool wKey, aKey, sKey, dKey,spaceKey = false;
 const float forwardForce = 100.0f;
 
@@ -59,10 +60,16 @@ bool canShoot = false;
 float shotTimer = 1.0f;
 float shotDelay = 0.1f;
 
+float stdDelay = 0.1f;
+float boostedDelay = 0.05f;
+
+float boostedDelayTimer = 0.0f;
+float boostedShotLen = 8.0f;
+
 // Level related variables
 const float levelDelay = 2.0f;
 float cLevelDelay = 0.0f;
-float width, height;
+float width = 0, height = 0;
 
 int currentLevel = 1;
 const int maxLevel = 30;
@@ -75,7 +82,7 @@ const int saPerLevel = 2;
 const float ufoPerLevel = 0.2f;
 
 // Object arrays, variable size is set the the maximum of that object that could possibly be in my scene at a given time
-int maxBul = 8;
+int maxBul = 16;
 Bullet* bullet = new Bullet[maxBul];
 int bulletIndex = 0;
 
@@ -112,7 +119,7 @@ const glm::vec4 hitBG = glm::vec4(1.0f, 0.0f, 0.0f, 1.0f);
 const glm::vec4 normalBG = glm::vec4(0.0f, 0.0f, 0.0f, 1.0f);
 
 // textures
-int bulletTexture, playerTexture, astroidBigTexture, astroidMediumTexture, astroidSmallTexture, UFOtexture, ufoBulletText, healthUpText, sheildUpText;
+int bulletTexture, playerTexture, astroidBigTexture, astroidMediumTexture, astroidSmallTexture, UFOtexture, ufoBulletText, healthUpText, sheildUpText, fireRateUpText;
 const glm::vec2 BulletSize = glm::vec2(5, 5);
 
 // Animation objects for both the players muzzle flash and my ufos muzzle flash
@@ -125,13 +132,14 @@ Animation* UFOgunFlare = new Animation[maxUFO];
 // Other sprite objects
 int* healthTextIDs = new int[5];
 
-GameObject healthUp, shieldUp;
+GameObject healthUp, shieldUp, fireRateUp;
 const float pUpSpeed = 9.0f;
 
 // Power up variables
 const float powerUpDespawn = 10.0f;
 float healthUpTimer = 0.0f;
 float shieldUpTimer = 0.0f;
+float fireRateTimer = 0.0f;
 
 // Other variables and consts
 const float PI = 3.141593f;
@@ -193,6 +201,7 @@ int main(void) {
 
 	healthUpText = loadTexture("Resources\\Textures\\healthUp.png", TextureProperties::NearestFilterTexture());
 	sheildUpText = loadTexture("Resources\\Textures\\shieldUp.png", TextureProperties::NearestFilterTexture());
+	fireRateUpText = loadTexture("Resources\\Textures\\fireRateUp.webp", TextureProperties::NearestFilterTexture());
 
 	int shieldIDText = loadTexture("Resources\\Textures\\shield.png", TextureProperties::NearestFilterTexture());
 
@@ -202,8 +211,11 @@ int main(void) {
 	//creating objects, with correct textures and sizes. many i spawn off screen.
 	GameObject2D tHU = GameObject2D(glm::vec2(1000.0f, 1000.0f), 0, glm::vec2(8.0f, 8.0f), healthUpText);
 	GameObject2D tSU = GameObject2D(glm::vec2(1000.0f, 1000.0f), 0, glm::vec2(8.0f, 8.0f), sheildUpText);
+	GameObject2D tFR = GameObject2D(glm::vec2(1000.0f, 1000.0f), 0, glm::vec2(8.0f, 8.0f), fireRateUpText);
+
 	healthUp.makeNew(GameObject(&tHU));
 	shieldUp.makeNew(GameObject(&tSU));
+	fireRateUp.makeNew(GameObject(&tFR));
 	
 	GameObject2D hb = GameObject2D(glm::vec2(-width / 2.0f + 10.0f, height / 2.0f - 2.5f), 0.0f, glm::vec2(20, 5), healthTextIDs[4]);
 
@@ -211,6 +223,11 @@ int main(void) {
 
 	gunFlareAnimL.makeNew(Animation(0.0f, gunFlareIDs, 4, glm::vec2(3, 3)));
 	gunFlareAnimR.makeNew(Animation(0.0f, gunFlareIDs, 4, glm::vec2(3, 3)));
+
+	if (player == nullptr) {
+
+		exit(0);
+	}
 
 	//set keyboard handler and update fuction
 	setKeyboardHandler(myKeyboardHandler);
@@ -239,7 +256,7 @@ void myUpdateScene(GLFWwindow* window, double tDelta) {
 	// Control the player movement
 	playerControl(tDelta);
 	player->keepOnScreen(width / 2.0f, height / 2.0f);
-
+	
 	// Control the enemy UFOs movement
 	enemyControl(tDelta);
 	ufoUpdateBullets(tDelta);
@@ -420,14 +437,12 @@ void updateBullets(double tDelta) {
 
 		// If a kill occured 
 		if (kill) {
-
+			int chance = rand() % 100 + 1;
 			// Check if the health postion is already active (only one at a time), the following applies for all power ups.
 			if (healthUp.getPos().x < 100) {
 				//do nothing
 			}
 			else {
-				// create a random number from 1-100;
-				int chance = rand() % 100 + 1;
 
 				// 2% chance to spawn the health power up
 				if (chance < 3) {
@@ -445,13 +460,22 @@ void updateBullets(double tDelta) {
 			}
 			else {
 
-				int chance = rand() % 100 + 1;
-
 				if (chance < 2) {
 
 					spawnPUp(&shieldUp, hitPos);
 
 					shieldUpTimer = 0;
+				}
+			}
+			if (fireRateUp.getPos().x < 100.0f) {
+				// do nothing
+			}
+			else {
+				if (chance < 2) {
+
+					spawnPUp(&fireRateUp, hitPos);
+
+					fireRateTimer = 0;
 				}
 			}
 		}
@@ -544,26 +568,68 @@ void updateUps(double tDelta) {
 	else {
 		//do nothing
 	}
+
+	if (fireRateUp.getPos().x < 100) {
+
+		fireRateUp.updateVel(tDelta);
+		fireRateUp.keepOnScreen(width / 2.0f, height / 2.0f);
+
+		fireRateTimer += (float) tDelta;
+
+		if (fireRateTimer > powerUpDespawn) {
+
+			fireRateUp.setPos(glm::vec2(1000.0f, 1000.0f));
+		}
+	}
+	else {
+		// do nothing
+	}
+
+	if (boostedDelayTimer > 0) {
+
+		boostedDelayTimer -= (float)tDelta;
+	} 
+	else if (boostedDelayTimer < 0) {
+		shotDelay = stdDelay;
+	}
+	else
+	{
+		// do nothing
+	}
 }
 
 // Check players colisions
 void checkPlayerHB(double tDelta) {
 
-	// Check the players colision on power ups
-	if (healthUp.checkColl(player)) {
-		// If its a hit, move the power up out of bounds
-		healthUp.setPos(glm::vec2(1000.0f, 1000.0f));
+	if (healthUp.getPos().x < 100.0f) {
+		// Check the players colision on power ups
+		if (healthUp.checkColl(player)) {
+			// If its a hit, move the power up out of bounds
+			healthUp.setPos(glm::vec2(1000.0f, 1000.0f));
 
-		// Add health to the player
-		player->addHealth();
+			// Add health to the player
+			player->addHealth();
+		}
 	}
 
-	if (shieldUp.checkColl(player)) {
+	if (shieldUp.getPos().x < 100.0f) {
+		if (shieldUp.checkColl(player)) {
 
-		shieldUp.setPos(glm::vec2(1000.0f, 1000.0f));
+			shieldUp.setPos(glm::vec2(1000.0f, 1000.0f));
 
-		// Add a sheild to the player
-		player->addSheild();
+			// Add a sheild to the player
+			player->addSheild();
+		}
+	}
+
+	if (fireRateUp.getPos().x < 100.0f) {
+		if (fireRateUp.checkColl(player)) {
+
+			fireRateUp.setPos(glm::vec2(1000.0f,1000.0f));
+
+			shotDelay = boostedDelay;
+			boostedDelayTimer = boostedShotLen;
+		}
 	}
 
 	// Increment the damage cooldown
@@ -1086,6 +1152,7 @@ void shoot(double tDelta) {
 
 // Custom render fucntion
 void myRenderFunction(GLFWwindow* window) {
+
 	// render every single game object
 	player->render();
 
@@ -1124,6 +1191,10 @@ void myRenderFunction(GLFWwindow* window) {
 
 	if (shieldUp.getPos().x < 100) {
 		shieldUp.render();
+	}
+
+	if (fireRateUp.getPos().x < 100.0f) {
+		fireRateUp.render();
 	}
 
 	if (gunFlareAnimL.getPos().x < 100) {

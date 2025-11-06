@@ -12,6 +12,7 @@ class GameObject : public GameObject2D
 protected:
 	// Variables
 	const float PI = 3.141593f;
+	float checkSize;
 	float maxSpeed = 200.0f;
 	glm::vec2 velocity = glm::vec2(0.0f, 0.0f);
 	float rotSpeed = glm::radians(420.0f);
@@ -25,6 +26,7 @@ public:
 	GameObject(GameObject2D* object);
 
 	// Functions
+	float getCheckSize();
 	void updateVel(double tDelta);
 	glm::vec2 getForwardVector();
 	void keepOnScreen(float height, float width);
