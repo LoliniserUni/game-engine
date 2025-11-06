@@ -6,7 +6,9 @@ GameObject::GameObject(GameObject2D* object) : GameObject2D(object->getPos(), ob
 GameObject::GameObject(glm::vec2 pos, float ori, int textID, glm::vec2 siz) : GameObject2D(pos, ori, siz, textID) {
 	checkSize = abs(siz.x / 2.0f) * abs(siz.x / 2.0f);
 };
-
+glm::vec2 GameObject::getVel() {
+	return velocity;
+}
 float GameObject::getCheckSize() {
 	return checkSize;
 }

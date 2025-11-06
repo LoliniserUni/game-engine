@@ -46,7 +46,7 @@ void releaseMemory();
 // Player controls and variables
 Player* player = nullptr;
 
-bool wKey, aKey, sKey, dKey,spaceKey = false;
+bool wKey = false, aKey = false, sKey = false, dKey = false, spaceKey = false, leftShift = false;
 const float forwardForce = 100.0f;
 
 const float damageCoolDown = 1.0f;
@@ -1070,6 +1070,15 @@ void playerControl(double tDelta) {
 		player->addVelocity(player->getForwardVector(), forwardForce*-1.0, tDelta);
 	}
 
+	if (leftShift) {
+		glm::vec2 velocity = player->getVel();
+		if (glm::length(velocity) > 0) {
+
+			glm::vec2 velDir = glm::normalize(player->getVel());
+			player->addVelocity(velDir, forwardForce * -1.0, tDelta);
+		}
+	}
+
 	// If the user is shooting, and the player can shoot
 	if (spaceKey && canShoot) {
 		// Shoot
@@ -1345,7 +1354,9 @@ void myKeyboardHandler(GLFWwindow* window, int key, int scancode, int action, in
 		case GLFW_KEY_SPACE:
 			spaceKey = true;
 			break;
-
+		case GLFW_KEY_LEFT_SHIFT:
+			leftShift = true;
+			break;
 		default:
 		{
 		}
@@ -1374,7 +1385,9 @@ void myKeyboardHandler(GLFWwindow* window, int key, int scancode, int action, in
 		case GLFW_KEY_SPACE:
 			spaceKey = false;
 			break;
-
+		case GLFW_KEY_LEFT_SHIFT:
+			leftShift = false;
+			break;
 		default:
 		{
 		}

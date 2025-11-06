@@ -25,6 +25,7 @@ public:
 	GameObject(glm::vec2 pos, float ori, int textID, glm::vec2 siz);
 	GameObject(GameObject2D* object);
 
+	glm::vec2 getVel();
 	// Functions
 	float getCheckSize();
 	void updateVel(double tDelta);
