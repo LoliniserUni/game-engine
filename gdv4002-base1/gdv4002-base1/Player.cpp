@@ -54,7 +54,7 @@ void Player::addVelocity(glm::vec2 dir, float mag, double tDelta) {
 	}
 }
 
-GameObject Player::shoot(double tDelta, float speed, int texture, glm::vec2 size, Animation* lGun, Animation* rGun) {
+GameObject Player::shoot(double tDelta, float speed, int texture, glm::vec2 size, Animation* lGun, Animation* rGun, float rotOffset) {
 
 	// Get the current position, and offset it forwards
 	float fX = 5 * cos(orientation) + position.x;
@@ -75,12 +75,12 @@ GameObject Player::shoot(double tDelta, float speed, int texture, glm::vec2 size
 		fY += (2 * sin(orientation - 90 * 180 / PI));
 
 		// Play the right gun Animation at this position
-		rGun->playAnim(glm::vec2(fX, fY), orientation, tDelta);
+		rGun->playAnim(glm::vec2(fX, fY), orientation + rotOffset, tDelta);
 	}
 
 	// Set the new position and get the orientation 
 	glm::vec2 newPos = glm::vec2(fX,fY);
-	float ori = orientation;
+	float ori = orientation + rotOffset;
 
 	// Create a bullet, and set its velocity
 	GameObject bullet = GameObject(newPos, ori, texture, size);

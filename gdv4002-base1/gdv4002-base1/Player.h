@@ -28,7 +28,7 @@ public:
 	GameObject2D* getShield();
 	GameObject2D* getHB();
 	void resetVel();
-	GameObject shoot(double tDelta, float speed, int texture, glm::vec2 size, Animation* lGun, Animation* rGun);
+	GameObject shoot(double tDelta, float speed, int texture, glm::vec2 size, Animation* lGun, Animation* rGun, float rotOffset);
 	void turnLeft(double tDelta);
 	void turnRight(double tDelta);
 	void addVelocity(glm::vec2 dir, float mag, double tDelta);

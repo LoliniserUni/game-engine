@@ -52,6 +52,8 @@ const float forwardForce = 100.0f;
 const float damageCoolDown = 1.0f;
 float cDamageTimer = 0;
 
+bool hasTrippleShot = false;
+
 // Bullet related variables
 int bulletNum = 0;
 const float bulletMag = 300.0f;
@@ -65,6 +67,8 @@ float boostedDelay = 0.05f;
 
 float boostedDelayTimer = 0.0f;
 float boostedShotLen = 8.0f;
+
+float trippleShotLen = 0.0f;
 
 // Level related variables
 const float levelDelay = 2.0f;
@@ -82,12 +86,12 @@ const int saPerLevel = 2;
 const float ufoPerLevel = 0.2f;
 
 // Object arrays, variable size is set the the maximum of that object that could possibly be in my scene at a given time
-int maxBul = 16;
+int maxBul = 48;
 Bullet* bullet = new Bullet[maxBul];
 int bulletIndex = 0;
 
 int maxEnemyBul = 6;
-Bullet* enemyBullet = new Bullet[6];
+Bullet* enemyBullet = new Bullet[20];
 int enemyBulletIndex = 0;
 
 int maxBAs = maxLevel * baPerLevel;
@@ -119,7 +123,7 @@ const glm::vec4 hitBG = glm::vec4(1.0f, 0.0f, 0.0f, 1.0f);
 const glm::vec4 normalBG = glm::vec4(0.0f, 0.0f, 0.0f, 1.0f);
 
 // textures
-int bulletTexture, playerTexture, astroidBigTexture, astroidMediumTexture, astroidSmallTexture, UFOtexture, ufoBulletText, healthUpText, sheildUpText, fireRateUpText;
+int bulletTexture, playerTexture, astroidBigTexture, astroidMediumTexture, astroidSmallTexture, UFOtexture, ufoBulletText, healthUpText, sheildUpText, fireRateUpText, trippleShotText;
 const glm::vec2 BulletSize = glm::vec2(5, 5);
 
 // Animation objects for both the players muzzle flash and my ufos muzzle flash
@@ -132,7 +136,7 @@ Animation* UFOgunFlare = new Animation[maxUFO];
 // Other sprite objects
 int* healthTextIDs = new int[5];
 
-GameObject healthUp, shieldUp, fireRateUp;
+GameObject healthUp, shieldUp, fireRateUp, trippleShot;
 const float pUpSpeed = 9.0f;
 
 // Power up variables
@@ -140,6 +144,7 @@ const float powerUpDespawn = 10.0f;
 float healthUpTimer = 0.0f;
 float shieldUpTimer = 0.0f;
 float fireRateTimer = 0.0f;
+float trippleShotTimer = 0.0f;
 
 // Other variables and consts
 const float PI = 3.141593f;
@@ -202,6 +207,7 @@ int main(void) {
 	healthUpText = loadTexture("Resources\\Textures\\healthUp.png", TextureProperties::NearestFilterTexture());
 	sheildUpText = loadTexture("Resources\\Textures\\shieldUp.png", TextureProperties::NearestFilterTexture());
 	fireRateUpText = loadTexture("Resources\\Textures\\fireRateUp.webp", TextureProperties::NearestFilterTexture());
+	trippleShotText = loadTexture("Resources\\Textures\\trippleShot.png", TextureProperties::NearestFilterTexture());
 
 	int shieldIDText = loadTexture("Resources\\Textures\\shield.png", TextureProperties::NearestFilterTexture());
 
@@ -212,10 +218,12 @@ int main(void) {
 	GameObject2D tHU = GameObject2D(glm::vec2(1000.0f, 1000.0f), 0, glm::vec2(8.0f, 8.0f), healthUpText);
 	GameObject2D tSU = GameObject2D(glm::vec2(1000.0f, 1000.0f), 0, glm::vec2(8.0f, 8.0f), sheildUpText);
 	GameObject2D tFR = GameObject2D(glm::vec2(1000.0f, 1000.0f), 0, glm::vec2(8.0f, 8.0f), fireRateUpText);
+	GameObject2D tTS = GameObject2D(glm::vec2(1000.0f, 1000.0f), 0, glm::vec2(8.0f, 8.0f), trippleShotText);
 
 	healthUp.makeNew(GameObject(&tHU));
 	shieldUp.makeNew(GameObject(&tSU));
 	fireRateUp.makeNew(GameObject(&tFR));
+	trippleShot.makeNew(GameObject(&tTS));
 	
 	GameObject2D hb = GameObject2D(glm::vec2(-width / 2.0f + 10.0f, height / 2.0f - 2.5f), 0.0f, glm::vec2(20, 5), healthTextIDs[4]);
 
@@ -467,6 +475,7 @@ void updateBullets(double tDelta) {
 					shieldUpTimer = 0;
 				}
 			}
+
 			if (fireRateUp.getPos().x < 100.0f) {
 				// do nothing
 			}
@@ -477,6 +486,20 @@ void updateBullets(double tDelta) {
 					spawnPUp(&fireRateUp, hitPos);
 
 					fireRateTimer = 0;
+				}
+			}
+
+			if (trippleShot.getPos().x < 100.0f) {
+				// do nothing
+			}
+			else {
+				int chance = rand() % 100 + 1;
+
+				if (chance < 2) {
+					
+					spawnPUp(&trippleShot, hitPos);
+
+					trippleShotTimer = 0;
 				}
 			}
 		}
@@ -553,6 +576,26 @@ void updateUps(double tDelta) {
 		//do nothing
 	}
 
+	// Only update the power up if its in bounds (in use), the following applies for all power ups
+	if (trippleShot.getPos().x < 100) {
+
+		// Update the positition and keep it on screen
+		trippleShot.updateVel(tDelta);
+		trippleShot.keepOnScreen(width / 2.0f, height / 2.0f);
+
+		// Increment the despawn timer
+		trippleShotTimer += (float)tDelta;
+
+		if (trippleShotTimer > powerUpDespawn) {
+			// If the timer is up, move the power up out of bounds
+			healthUp.setPos(glm::vec2(1000.0f, 1000.0f));
+
+		}
+	}
+	else {
+		//do nothing
+	}
+
 
 	if (shieldUp.getPos().x < 100) {
 
@@ -597,6 +640,13 @@ void updateUps(double tDelta) {
 	{
 		// do nothing
 	}
+
+	if (hasTrippleShot) {
+		trippleShotLen -= (float)tDelta;
+		if (trippleShotLen < 0) {
+			hasTrippleShot = false;
+		}
+	}
 }
 
 // Check players colisions
@@ -613,6 +663,16 @@ void checkPlayerHB(double tDelta) {
 		}
 	}
 
+	if (trippleShot.getPos().x < 100.0f) {
+		if (trippleShot.checkColl(player)) {
+			trippleShot.setPos(glm::vec2(1000.0f,100.0f));
+
+
+			trippleShotLen = boostedShotLen;
+
+			hasTrippleShot = true;
+		}
+	}
 	if (shieldUp.getPos().x < 100.0f) {
 		if (shieldUp.checkColl(player)) {
 
@@ -1134,6 +1194,8 @@ void enemyShoot(double tDelta, int index) {
 	// Apply its velocity
 	enemyBullet[enemyBulletIndex].setVelocity(enemyBullet[enemyBulletIndex].getForwardVector(), bulletMag);
 
+
+
 	// Increment the enemy Bullet index
 	enemyBulletIndex++;
 }
@@ -1143,13 +1205,33 @@ void shoot(double tDelta) {
 	canShoot = false;
 
 	// Create a new bullet
-	bullet[bulletIndex].makeNew(player->shoot(tDelta, bulletMag, bulletTexture, BulletSize,&gunFlareAnimL,&gunFlareAnimR));
+	bullet[bulletIndex].makeNew(player->shoot(tDelta, bulletMag, bulletTexture, BulletSize,&gunFlareAnimL,&gunFlareAnimR, 0));
 
 	// Set its velocity
 	bullet[bulletIndex].setVelocity(bullet[bulletIndex].getForwardVector(), bulletMag);
 
 	// Inceremnt the bullet index.
 	bulletIndex++;
+
+	if (hasTrippleShot) {
+		// Create a new bullet
+		bullet[bulletIndex].makeNew(player->shoot(tDelta, bulletMag, bulletTexture, BulletSize, &gunFlareAnimL, &gunFlareAnimR, glm::radians(30.0f)));
+
+		// Set its velocity
+		bullet[bulletIndex].setVelocity(bullet[bulletIndex].getForwardVector(), bulletMag);
+
+		// Inceremnt the bullet index.
+		bulletIndex++;
+
+		// Create a new bullet
+		bullet[bulletIndex].makeNew(player->shoot(tDelta, bulletMag, bulletTexture, BulletSize, &gunFlareAnimL, &gunFlareAnimR, glm::radians(-30.0f)));
+
+		// Set its velocity
+		bullet[bulletIndex].setVelocity(bullet[bulletIndex].getForwardVector(), bulletMag);
+
+		// Inceremnt the bullet index.
+		bulletIndex++;
+	}
 }
 
 // Custom render fucntion
@@ -1160,6 +1242,22 @@ void myRenderFunction(GLFWwindow* window) {
 
 	if (player->getShield()->getPos().x < 100) {
 		player->getShield()->render();
+	}
+
+	if (healthUp.getPos().x < 100) {
+		healthUp.render();
+	}
+
+	if (shieldUp.getPos().x < 100) {
+		shieldUp.render();
+	}
+
+	if (fireRateUp.getPos().x < 100.0f) {
+		fireRateUp.render();
+	}
+
+	if (trippleShot.getPos().x < 100.0f) {
+		trippleShot.render();
 	}
 
 	for (int i = 0; i < bulletIndex; i++) {
@@ -1185,18 +1283,6 @@ void myRenderFunction(GLFWwindow* window) {
 
 	for (int i = 0; i < enemyBulletIndex; i++) {
 		enemyBullet[i].render();
-	}
-
-	if (healthUp.getPos().x < 100) {
-		healthUp.render();
-	}
-
-	if (shieldUp.getPos().x < 100) {
-		shieldUp.render();
-	}
-
-	if (fireRateUp.getPos().x < 100.0f) {
-		fireRateUp.render();
 	}
 
 	if (gunFlareAnimL.getPos().x < 100) {
