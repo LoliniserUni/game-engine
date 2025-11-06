@@ -123,7 +123,7 @@ const glm::vec4 hitBG = glm::vec4(1.0f, 0.0f, 0.0f, 1.0f);
 const glm::vec4 normalBG = glm::vec4(0.0f, 0.0f, 0.0f, 1.0f);
 
 // textures
-int bulletTexture, playerTexture, astroidBigTexture, astroidMediumTexture, astroidSmallTexture, UFOtexture, ufoBulletText, healthUpText, sheildUpText, fireRateUpText, trippleShotText;
+int bulletTexture, playerTexture, astroidBigTexture, astroidMediumTexture, astroidSmallTexture, UFOtexture, ufoBulletText, healthUpText, sheildUpText, fireRateUpText, trippleShotText, cloverText;
 const glm::vec2 BulletSize = glm::vec2(5, 5);
 
 // Animation objects for both the players muzzle flash and my ufos muzzle flash
@@ -136,7 +136,7 @@ Animation* UFOgunFlare = new Animation[maxUFO];
 // Other sprite objects
 int* healthTextIDs = new int[5];
 
-GameObject healthUp, shieldUp, fireRateUp, trippleShot;
+GameObject healthUp, shieldUp, fireRateUp, trippleShot, clover;
 const float pUpSpeed = 9.0f;
 
 // Power up variables
@@ -145,6 +145,7 @@ float healthUpTimer = 0.0f;
 float shieldUpTimer = 0.0f;
 float fireRateTimer = 0.0f;
 float trippleShotTimer = 0.0f;
+float cloverDespawnTimer = 0.0f;
 
 // Other variables and consts
 const float PI = 3.141593f;
@@ -208,6 +209,7 @@ int main(void) {
 	sheildUpText = loadTexture("Resources\\Textures\\shieldUp.png", TextureProperties::NearestFilterTexture());
 	fireRateUpText = loadTexture("Resources\\Textures\\fireRateUp.webp", TextureProperties::NearestFilterTexture());
 	trippleShotText = loadTexture("Resources\\Textures\\trippleShot.png", TextureProperties::NearestFilterTexture());
+	cloverText = loadTexture("Resources\\Textures\\clover.png", TextureProperties::NearestFilterTexture());
 
 	int shieldIDText = loadTexture("Resources\\Textures\\shield.png", TextureProperties::NearestFilterTexture());
 
@@ -219,11 +221,13 @@ int main(void) {
 	GameObject2D tSU = GameObject2D(glm::vec2(1000.0f, 1000.0f), 0, glm::vec2(8.0f, 8.0f), sheildUpText);
 	GameObject2D tFR = GameObject2D(glm::vec2(1000.0f, 1000.0f), 0, glm::vec2(8.0f, 8.0f), fireRateUpText);
 	GameObject2D tTS = GameObject2D(glm::vec2(1000.0f, 1000.0f), 0, glm::vec2(8.0f, 8.0f), trippleShotText);
+	GameObject2D tC = GameObject2D(glm::vec2(1000.0f, 1000.0f), 0, glm::vec2(8.0f, 8.0f), cloverText);
 
 	healthUp.makeNew(GameObject(&tHU));
 	shieldUp.makeNew(GameObject(&tSU));
 	fireRateUp.makeNew(GameObject(&tFR));
 	trippleShot.makeNew(GameObject(&tTS));
+	clover.makeNew(GameObject(&tC));
 	
 	GameObject2D hb = GameObject2D(glm::vec2(-width / 2.0f + 10.0f, height / 2.0f - 2.5f), 0.0f, glm::vec2(20, 5), healthTextIDs[4]);
 
@@ -502,6 +506,20 @@ void updateBullets(double tDelta) {
 					trippleShotTimer = 0;
 				}
 			}
+			if (clover.getPos().x < 100.0f) {
+				// do nothing
+			}
+			else {
+				int chance = rand() % 700 + 1;
+
+				if (chance < 2) {
+
+					spawnPUp(&clover, hitPos);
+
+					cloverDespawnTimer = 0;
+				}
+			}
+			
 		}
 	}
 }
@@ -575,6 +593,26 @@ void updateUps(double tDelta) {
 	else {
 		//do nothing
 	}
+
+	if (clover.getPos().x < 100) {
+
+		// Update the positition and keep it on screen
+		clover.updateVel(tDelta);
+		clover.keepOnScreen(width / 2.0f, height / 2.0f);
+
+		// Increment the despawn timer
+		cloverDespawnTimer += (float)tDelta;
+
+		if (cloverDespawnTimer > powerUpDespawn) {
+			// If the timer is up, move the power up out of bounds
+			clover.setPos(glm::vec2(1000.0f, 1000.0f));
+		}
+	}
+	else {
+		//do nothing
+	}
+
+	
 
 	// Only update the power up if its in bounds (in use), the following applies for all power ups
 	if (trippleShot.getPos().x < 100) {
@@ -660,6 +698,19 @@ void checkPlayerHB(double tDelta) {
 
 			// Add health to the player
 			player->addHealth();
+		}
+	}
+
+	if (clover.getPos().x < 100.0f) {
+		// Check the players colision on power ups
+		if (clover.checkColl(player)) {
+
+			spawnPUp(&fireRateUp, clover.getPos());
+			spawnPUp(&trippleShot, clover.getPos());
+			spawnPUp(&shieldUp, clover.getPos());
+			spawnPUp(&healthUp, clover.getPos());
+
+			clover.setPos(glm::vec2(1000.0f, 1000.0f));
 		}
 	}
 
@@ -1138,6 +1189,8 @@ void fullReset() {
 	healthUp.setPos(glm::vec2(1000.0f, 1000.0f));
 	shieldUp.setPos(glm::vec2(1000.0f, 1000.0f));
 	fireRateUp.setPos(glm::vec2(1000.0f, 1000.0f));
+	clover.setPos(glm::vec2(1000.0f, 1000.0f));
+	trippleShot.setPos(glm::vec2(1000.0f, 1000.0f));
 
 	// Set player to full health
 	player->setFullHealth();
@@ -1267,6 +1320,10 @@ void myRenderFunction(GLFWwindow* window) {
 
 	if (trippleShot.getPos().x < 100.0f) {
 		trippleShot.render();
+	}
+
+	if (clover.getPos().x < 100.0f) {
+		clover.render();
 	}
 
 	for (int i = 0; i < bulletIndex; i++) {
