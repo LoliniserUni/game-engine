@@ -19,6 +19,9 @@ private:
 	int* healthTextures;
 
 public:
+	bool alive = true;
+
+public:
 	// Constructors
 	Player(glm::vec2 pos, float ori, int textID, glm::vec2 siz, GameObject2D* healthBar, int* healthTextures, GameObject2D* shieldBubble);
 	Player(GameObject2D* object);

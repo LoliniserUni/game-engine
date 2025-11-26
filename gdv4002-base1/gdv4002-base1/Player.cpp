@@ -28,16 +28,19 @@ void Player::resetVel() {
 	velocity = glm::vec2(0, 0);
 }
 void Player::turnLeft(double tDelta) {
+	if (!alive) return;
 	// Add the rotation speed * time delta to the orientation 
 	orientation = orientation + (rotSpeed * (float) tDelta);
 
 }
 void Player::turnRight(double tDelta) {
+	if (!alive) return;
 	// subtract the rotation speed * time delta to the orientation 
 	orientation = orientation + (-rotSpeed * (float) tDelta);
 }
 
 void Player::addVelocity(glm::vec2 dir, float mag, double tDelta) {
+	if (!alive) return;
 	// Get the acceleartion in the applied direction, and * by the magnitude and the time delta
 	glm::vec2 accel = dir * (float)tDelta * mag;
 
@@ -55,6 +58,7 @@ void Player::addVelocity(glm::vec2 dir, float mag, double tDelta) {
 }
 
 GameObject Player::shoot(double tDelta, float speed, int texture, glm::vec2 size, Animation* lGun, Animation* rGun, float rotOffset) {
+	if (!alive) return GameObject();
 
 	// Get the current position, and offset it forwards
 	float fX = 5 * cos(orientation) + position.x;
@@ -91,11 +95,15 @@ GameObject Player::shoot(double tDelta, float speed, int texture, glm::vec2 size
 }
 
 void Player::setFullHealth() {
+
+	alive = true;
 	// Set the health bar to full, and render the health bars correct texture
 	health = 4;
 	healthBar->setTexture(healthTextures[health]);
 }
 void Player::addHealth() {
+
+	alive = true;
 	// Check that the player isnt at max health
 	if (health < 4) {
 		// If not at max health, add health and render the new health bar
@@ -121,6 +129,8 @@ bool Player::reduceHealth() {
 		// Render the empty health bar
 		healthBar->setTexture(healthTextures[0]);
 		health = 0;
+
+		this->alive = false;
 		// return true
 		return true;
 	}

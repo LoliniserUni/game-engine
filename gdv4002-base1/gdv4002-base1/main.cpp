@@ -8,6 +8,7 @@
 #include "EnemyUFO.h"
 
 // Function prototypes
+void shoot2(double tDelta);
 void myUpdateScene(GLFWwindow*,double);
 void myKeyboardHandler(GLFWwindow*, int, int, int, int);
 void myRenderFunction(GLFWwindow* window);
@@ -47,31 +48,42 @@ void spawnBackgrounfParticles(double tDelta, glm::vec2 pos, int index);
 
 // Player controls and variables
 Player* player = nullptr;
+Player* player2 = nullptr;
 
 bool wKey = false, aKey = false, sKey = false, dKey = false, spaceKey = false, leftShift = false;
+bool key8 = false, key4 = false, key5 = false, key6 = false, rightKey = false, downKey = false;
 const float forwardForce = 100.0f;
 
 const float damageCoolDown = 1.0f;
 float cDamageTimer = 0;
+float cDamageTimer2 = 0;
 
 bool hasTrippleShot = false;
+bool hasTrippleShot2 = false;
 
 // Bullet related variables
 int bulletNum = 0;
 const float bulletMag = 300.0f;
 bool canShoot = false;
+bool canShoot2 = false;
 
 float shotTimer = 1.0f;
+
+float shotTimer2 = 1.0f;
 float shotDelay = 0.1f;
+
+float shotDelay2 = 0.1f;
 
 float stdDelay = 0.1f;
 float boostedDelay = 0.05f;
 
 float boostedDelayTimer = 0.0f;
+
+float boostedDelayTimer2 = 0.0f;
 float boostedShotLen = 8.0f;
 
 float trippleShotLen = 0.0f;
-
+float trippleShotLen2 = 0.0f;
 // Level related variables
 const float levelDelay = 2.0f;
 float cLevelDelay = 0.0f;
@@ -88,7 +100,7 @@ const int saPerLevel = 2;
 const float ufoPerLevel = 0.2f;
 
 // Object arrays, variable size is set the the maximum of that object that could possibly be in my scene at a given time
-int maxBul = 48;
+int maxBul = 96;
 Bullet* bullet = new Bullet[maxBul];
 int bulletIndex = 0;
 
@@ -129,13 +141,15 @@ const glm::vec4 hitBG = glm::vec4(1.0f, 0.0f, 0.0f, 1.0f);
 const glm::vec4 normalBG = glm::vec4(0.0f, 0.0f, 0.0f, 1.0f);
 
 // textures
-int bulletTexture, playerTexture, astroidBigTexture, astroidMediumTexture, astroidSmallTexture, UFOtexture, ufoBulletText, healthUpText, sheildUpText, fireRateUpText, trippleShotText, cloverText, startText;
+int bulletTexture, playerTexture2, playerTexture, astroidBigTexture, astroidMediumTexture, astroidSmallTexture, UFOtexture, ufoBulletText, healthUpText, sheildUpText, fireRateUpText, trippleShotText, cloverText, startText;
 const glm::vec2 BulletSize = glm::vec2(5, 5);
 
 // Animation objects for both the players muzzle flash and my ufos muzzle flash
 int* blueGunFlareIDs = new int[4];
 int* gunFlareIDs = new int[4];
 Animation gunFlareAnimL, gunFlareAnimR;
+
+Animation gunFlareAnimL2, gunFlareAnimR2;
 Animation* UFOgunFlare = new Animation[maxUFO];
 
 
@@ -184,6 +198,7 @@ int main(void) {
 	hideAxisLines();
 	//setting all the various textures 
 	playerTexture = loadTexture("Resources\\Textures\\player1_ship.png", TextureProperties::NearestFilterTexture());
+	playerTexture2 = loadTexture("Resources\\Textures\\player2_ship.png", TextureProperties::NearestFilterTexture());
 	bulletTexture = loadTexture("Resources\\Textures\\bullet.png", TextureProperties::NearestFilterTexture());
 	astroidBigTexture = loadTexture("Resources\\Textures\\asteroid.png", TextureProperties::NearestFilterTexture());
 	astroidSmallTexture = loadTexture("Resources\\Textures\\asteroid.png", TextureProperties::NearestFilterTexture());
@@ -239,16 +254,16 @@ int main(void) {
 	clover.makeNew(GameObject(&tC));
 	
 	GameObject2D hb = GameObject2D(glm::vec2(-width / 2.0f + 10.0f, height / 2.0f - 2.5f), 0.0f, glm::vec2(20, 5), healthTextIDs[4]);
+	GameObject2D hb2 = GameObject2D(glm::vec2(width / 2.0f - 10.0f, height / 2.0f - 2.5f), 0.0f, glm::vec2(20, 5), healthTextIDs[4]);
 
 	player = new Player(glm::vec2(0, 0), 0, playerTexture, glm::vec2(10,10), &hb, healthTextIDs, shield);
+	player2 = new Player(glm::vec2(0, 0), 0, playerTexture2, glm::vec2(10, 10), &hb2, healthTextIDs, shield);
 
 	gunFlareAnimL.makeNew(Animation(0.0f, gunFlareIDs, 4, glm::vec2(3, 3)));
 	gunFlareAnimR.makeNew(Animation(0.0f, gunFlareIDs, 4, glm::vec2(3, 3)));
 
-	if (player == nullptr) {
-
-		exit(0);
-	}
+	gunFlareAnimL2.makeNew(Animation(0.0f, gunFlareIDs, 4, glm::vec2(3, 3)));
+	gunFlareAnimR2.makeNew(Animation(0.0f, gunFlareIDs, 4, glm::vec2(3, 3)));
 
 	// Set custom render scene (for ui)
 	setRenderFunction(myRenderFunction);
@@ -302,6 +317,7 @@ void myUpdateScene(GLFWwindow* window, double tDelta) {
 	// Control the player movement
 	playerControl(tDelta);
 	player->keepOnScreen(width / 2.0f, height / 2.0f);
+	player2->keepOnScreen(width / 2.0f, height / 2.0f);
 	
 	// Control the enemy UFOs movement
 	enemyControl(tDelta);
@@ -323,6 +339,13 @@ void myUpdateScene(GLFWwindow* window, double tDelta) {
 	for (int i = 0; i < 100; i++) {
 		backgroundParticles[i].updateVel(tDelta);
 		backgroundParticles[i].keepOnScreen(width / 2.0f, height / 2.0f);
+	}
+
+	if (player->alive || player2->alive) {
+		//do nothing
+	}
+	else {
+		fullReset();
 	}
 }
 
@@ -585,8 +608,7 @@ void ufoUpdateBullets(double tDelta) {
 			// If it did, reduce player health
 			if (player->reduceHealth()) {
 
-				// If player is dead, reset the game/
-				fullReset();
+				
 			}
 
 			// Delete the bullet if it hit the player
@@ -720,10 +742,29 @@ void updateUps(double tDelta) {
 		// do nothing
 	}
 
-	if (hasTrippleShot) {
-		trippleShotLen -= (float)tDelta;
-		if (trippleShotLen < 0) {
-			hasTrippleShot = false;
+	if (hasTrippleShot2) {
+		trippleShotLen2 -= (float)tDelta;
+		if (trippleShotLen2 < 0) {
+			hasTrippleShot2 = false;
+		}
+	}
+
+	if (boostedDelayTimer2 > 0) {
+
+		boostedDelayTimer2 -= (float)tDelta;
+	}
+	else if (boostedDelayTimer2 < 0) {
+		shotDelay2 = stdDelay;
+	}
+	else
+	{
+		// do nothing
+	}
+
+	if (hasTrippleShot2) {
+		trippleShotLen2 -= (float)tDelta;
+		if (trippleShotLen2 < 0) {
+			hasTrippleShot2 = false;
 		}
 	}
 }
@@ -740,11 +781,27 @@ void checkPlayerHB(double tDelta) {
 			// Add health to the player
 			player->addHealth();
 		}
+		if (healthUp.checkColl(player2)) {
+			// If its a hit, move the power up out of bounds
+			healthUp.setPos(glm::vec2(1000.0f, 1000.0f));
+
+			// Add health to the player
+			player2->addHealth();
+		}
 	}
 
 	if (clover.getPos().x < 100.0f) {
 		// Check the players colision on power ups
 		if (clover.checkColl(player)) {
+
+			spawnPUp(&fireRateUp, clover.getPos());
+			spawnPUp(&trippleShot, clover.getPos());
+			spawnPUp(&shieldUp, clover.getPos());
+			spawnPUp(&healthUp, clover.getPos());
+
+			clover.setPos(glm::vec2(1000.0f, 1000.0f));
+		}
+		if (clover.checkColl(player2)) {
 
 			spawnPUp(&fireRateUp, clover.getPos());
 			spawnPUp(&trippleShot, clover.getPos());
@@ -764,6 +821,15 @@ void checkPlayerHB(double tDelta) {
 
 			hasTrippleShot = true;
 		}
+
+		if (trippleShot.checkColl(player2)) {
+			trippleShot.setPos(glm::vec2(1000.0f, 100.0f));
+
+
+			trippleShotLen2 = boostedShotLen;
+
+			hasTrippleShot2 = true;
+		}
 	}
 	if (shieldUp.getPos().x < 100.0f) {
 		if (shieldUp.checkColl(player)) {
@@ -772,6 +838,13 @@ void checkPlayerHB(double tDelta) {
 
 			// Add a sheild to the player
 			player->addSheild();
+		}
+		if (shieldUp.checkColl(player2)) {
+
+			shieldUp.setPos(glm::vec2(1000.0f, 1000.0f));
+
+			// Add a sheild to the player
+			player2->addSheild();
 		}
 	}
 
@@ -783,10 +856,25 @@ void checkPlayerHB(double tDelta) {
 			shotDelay = boostedDelay;
 			boostedDelayTimer = boostedShotLen;
 		}
+		if (fireRateUp.checkColl(player2)) {
+
+			fireRateUp.setPos(glm::vec2(1000.0f, 1000.0f));
+
+			shotDelay2 = boostedDelay;
+			boostedDelayTimer2 = boostedShotLen;
+		}
 	}
 
 	// Increment the damage cooldown
-	cDamageTimer += (float) tDelta;
+	cDamageTimer2 += (float) tDelta;
+
+	// If the player is in itime (invincible time)
+	if (cDamageTimer2 < damageCoolDown) {
+		//do nothing
+		return;
+	}
+	// Increment the damage cooldown
+	cDamageTimer += (float)tDelta;
 
 	// If the player is in itime (invincible time)
 	if (cDamageTimer < damageCoolDown) {
@@ -796,6 +884,7 @@ void checkPlayerHB(double tDelta) {
 
 	// create boolean for a hit
 	bool hit = false;
+	bool hit2 = false;
 	
 	glm::vec2 playerPos = player->getPos();
 
@@ -810,11 +899,20 @@ void checkPlayerHB(double tDelta) {
 			// Reduce health from the ufo
 			UFO[ufo].reduceHealth();
 		}
+
+		// Check if the player hit it
+		if (UFO[ufo].checkColl(player2)) {
+
+			hit2 = true;
+
+			// Reduce health from the ufo
+			UFO[ufo].reduceHealth();
+		}
 	}
 	for (int ba = 0; ba < bigAstroidIndex; ba++) {
 
 		// If somethings already been hit, skip
-		if (hit) break;
+		if (hit || hit2) break;
 
 		if (bigAstroidArr[ba].checkColl(player)) {
 
@@ -822,11 +920,18 @@ void checkPlayerHB(double tDelta) {
 
 			bigAstroidArr[ba].addHit();
 		}
+
+		if (bigAstroidArr[ba].checkColl(player2)) {
+
+			hit2 = true;
+
+			bigAstroidArr[ba].addHit();
+		}
 	}
 
 	for (int ma = 0; ma < medAstroidIndex; ma++) {
 
-		if (hit) break;
+		if (hit || hit2) break;
 
 		if (medAstroidArr[ma].checkColl(player)) {
 
@@ -834,15 +939,28 @@ void checkPlayerHB(double tDelta) {
 
 			medAstroidArr[ma].addHit();
 		}
+
+		if (medAstroidArr[ma].checkColl(player2)) {
+
+			hit2 = true;
+
+			medAstroidArr[ma].addHit();
+		}
 	}
 
 	for (int sa = 0; sa < smallAstroidIndex; sa++) {
 
-		if (hit) break;
+		if (hit || hit2) break;
 
 		if (smallAstroidArr[sa].checkColl(player)) {
 
 			hit = true;
+
+			smallAstroidArr[sa].addHit();
+		}
+		if (smallAstroidArr[sa].checkColl(player2)) {
+
+			hit2 = true;
 
 			smallAstroidArr[sa].addHit();
 		}
@@ -857,8 +975,18 @@ void checkPlayerHB(double tDelta) {
 		// If player health = 0;
 		if (player->reduceHealth()) {
 
-			// Reset the scene
-			fullReset();
+
+		}
+	}
+
+	if (hit2) {
+
+		// Reset the damage cool down timer.
+		cDamageTimer2 = 0.0f;
+
+		// If player health = 0;
+		if (player2->reduceHealth()) {
+
 
 		}
 	}
@@ -1146,7 +1274,6 @@ void enemyControl(double tDelta) {
 			// Reset the shot timer
 			UFO[i].setTimer(0.0f);
 		}
-
 		// Update the velocity, and keep the UFO on screen
 		UFO[i].updateVel(tDelta);
 		UFO[i].keepOnScreen(width / 2.0f, height / 2.0f);
@@ -1201,6 +1328,52 @@ void playerControl(double tDelta) {
 	
 	// Update the players position
 	player->update(tDelta);
+
+	// Add to the shot delay
+	shotTimer2 += (float)tDelta;
+
+	// Decide if the player can shoot or not
+	if (shotTimer2 > shotDelay) {
+		canShoot2 = true;
+	}
+
+	// Do the corisponding control depending on what key is being pressed
+	if (key4) {
+		player2->turnLeft(tDelta);
+	}
+
+	if (key6) {
+		player2->turnRight(tDelta);
+	}
+
+	if (key8) {
+		player2->addVelocity(player2->getForwardVector(), forwardForce, tDelta);
+	}
+
+	if (key5) {
+		player2->addVelocity(player2->getForwardVector(), forwardForce * -1.0, tDelta);
+	}
+
+	if (downKey) {
+		glm::vec2 velocity = player2->getVel();
+		if (glm::length(velocity) > 0) {
+
+			glm::vec2 velDir = glm::normalize(player2->getVel());
+			player2->addVelocity(velDir, forwardForce * -1.0, tDelta);
+		}
+	}
+
+	// If the user is shooting, and the player can shoot
+	if (rightKey && canShoot2) {
+		// Shoot
+		shoot2(tDelta);
+
+		// Reset the shot timer
+		shotTimer2 = 0.0f;
+	}
+
+	// Update the players position
+	player2->update(tDelta);
 }
 
 // clear scene (clear objects from the engine)
@@ -1231,7 +1404,8 @@ void clearScene() {
 
 // Reset players health and position, and clear the scene
 void fullReset() {
-
+	player->alive = true;
+	player2->alive = true;
 	std::cout << "Your final score was: " << score;
 
 	score = 0;
@@ -1245,6 +1419,9 @@ void fullReset() {
 	// Reset player position
 	player->setPos(glm::vec2(0,0));
 
+	// Reset player position
+	player2->setPos(glm::vec2(0, 0));
+
 	// Reset power up positions
 	healthUp.setPos(glm::vec2(1000.0f, 1000.0f));
 	shieldUp.setPos(glm::vec2(1000.0f, 1000.0f));
@@ -1257,6 +1434,13 @@ void fullReset() {
 
 	// Remove players velocity
 	player->resetVel();
+
+
+	// Set player to full health
+	player2->setFullHealth();
+
+	// Remove players velocity
+	player2->resetVel();
 }
 
 // delete objects from array
@@ -1360,6 +1544,40 @@ void shoot(double tDelta) {
 	}
 }
 
+void shoot2(double tDelta) {
+	// Set can shoot to false
+	canShoot2 = false;
+
+	// Create a new bullet
+	bullet[bulletIndex].makeNew(player2->shoot(tDelta, bulletMag, bulletTexture, BulletSize, &gunFlareAnimL2, &gunFlareAnimR2, 0));
+
+	// Set its velocity
+	bullet[bulletIndex].setVelocity(bullet[bulletIndex].getForwardVector(), bulletMag);
+
+	// Inceremnt the bullet index.
+	bulletIndex++;
+
+	if (hasTrippleShot2) {
+		// Create a new bullet
+		bullet[bulletIndex].makeNew(player2->shoot(tDelta, bulletMag, bulletTexture, BulletSize, &gunFlareAnimL2, &gunFlareAnimR2, glm::radians(30.0f)));
+
+		// Set its velocity
+		bullet[bulletIndex].setVelocity(bullet[bulletIndex].getForwardVector(), bulletMag);
+
+		// Inceremnt the bullet index.
+		bulletIndex++;
+
+		// Create a new bullet
+		bullet[bulletIndex].makeNew(player2->shoot(tDelta, bulletMag, bulletTexture, BulletSize, &gunFlareAnimL2, &gunFlareAnimR2, glm::radians(-30.0f)));
+
+		// Set its velocity
+		bullet[bulletIndex].setVelocity(bullet[bulletIndex].getForwardVector(), bulletMag);
+
+		// Inceremnt the bullet index.
+		bulletIndex++;
+	}
+}
+
 // Custom render fucntion
 void myRenderFunction(GLFWwindow* window) {
 
@@ -1373,6 +1591,7 @@ void myRenderFunction(GLFWwindow* window) {
 
 	// render every single game object
 	player->render();
+	player2->render();
 
 	if (player->getShield()->getPos().x < 100) {
 		player->getShield()->render();
@@ -1440,6 +1659,7 @@ void myRenderFunction(GLFWwindow* window) {
 	}
 
 	player->getHB()->render();
+	player2->getHB()->render(); 
 }
 
 void releaseMemory() {
@@ -1494,6 +1714,24 @@ void myKeyboardHandler(GLFWwindow* window, int key, int scancode, int action, in
 		case GLFW_KEY_LEFT_SHIFT:
 			leftShift = true;
 			break;
+		case GLFW_KEY_KP_8:
+			key8 = true;
+			break;
+		case GLFW_KEY_KP_4:
+			key4 = true;
+			break;
+		case GLFW_KEY_KP_5:
+			key5 = true;
+			break;
+		case GLFW_KEY_KP_6:
+			key6 = true;
+			break;
+		case GLFW_KEY_RIGHT:
+			rightKey = true;
+			break;
+		case GLFW_KEY_DOWN:
+			downKey = true;
+			break;
 		default:
 		{
 		}
@@ -1524,6 +1762,24 @@ void myKeyboardHandler(GLFWwindow* window, int key, int scancode, int action, in
 			break;
 		case GLFW_KEY_LEFT_SHIFT:
 			leftShift = false;
+			break;
+		case GLFW_KEY_KP_8:
+			key8 = false;
+			break;
+		case GLFW_KEY_KP_4:
+			key4 = false;
+			break;
+		case GLFW_KEY_KP_5:
+			key5 = false;
+			break;
+		case GLFW_KEY_KP_6:
+			key6 = false;
+			break;
+		case GLFW_KEY_RIGHT:
+			rightKey = false;
+			break;
+		case GLFW_KEY_DOWN:
+			downKey = false;
 			break;
 		default:
 		{
