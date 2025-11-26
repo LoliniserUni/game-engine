@@ -92,8 +92,8 @@ int maxBul = 48;
 Bullet* bullet = new Bullet[maxBul];
 int bulletIndex = 0;
 
-int maxEnemyBul = 6;
-Bullet* enemyBullet = new Bullet[20];
+int maxEnemyBul = 20;
+Bullet* enemyBullet = new Bullet[maxEnemyBul];
 int enemyBulletIndex = 0;
 
 int maxBAs = maxLevel * baPerLevel;
@@ -181,9 +181,6 @@ int main(void) {
 
 	srand((unsigned int) time(0));
 
-	// Set custom render scene (for ui)
-	setRenderFunction(myRenderFunction);
-
 	hideAxisLines();
 	//setting all the various textures 
 	playerTexture = loadTexture("Resources\\Textures\\player1_ship.png", TextureProperties::NearestFilterTexture());
@@ -252,6 +249,9 @@ int main(void) {
 
 		exit(0);
 	}
+
+	// Set custom render scene (for ui)
+	setRenderFunction(myRenderFunction);
 
 	//set keyboard handler and update fuction
 	setKeyboardHandler(myKeyboardHandler);
@@ -1286,12 +1286,16 @@ void deleteBulletFromArray(Bullet* array, int index, int* arrSize) {
 	
 	for (int i = index; i < (*arrSize) - 1; i++) {
 
+		
 		array[i].makeNew(array[i + 1]);
 	}
 
-	(*arrSize)--;
+	if ((*arrSize) != 0) {
+		(*arrSize)--;
+	}
 
 	array[*arrSize].makeNew(Bullet());
+
 	array[*arrSize].setPos(glm::vec2(1000.0f, 1000.0f));
 }
 
@@ -1397,7 +1401,7 @@ void myRenderFunction(GLFWwindow* window) {
 	for (int i = 50; i < 75; i++) {
 		backgroundParticles[i].render();
 	}
-
+	
 	for (int i = 0; i < bulletIndex; i++) {
 		bullet[i].render();
 	}

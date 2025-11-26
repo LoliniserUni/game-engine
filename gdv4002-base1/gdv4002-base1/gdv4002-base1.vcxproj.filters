@@ -16,6 +16,9 @@
       <UniqueIdentifier>{67DA6AB6-F800-4c08-8B7A-83BB121AAD01}</UniqueIdentifier>
       <Extensions>rc;ico;cur;bmp;dlg;rc2;rct;bin;rgs;gif;jpg;jpeg;jpe;resx;tiff;tif;png;wav;mfcribbon-ms</Extensions>
     </Filter>
+    <Filter Include="Class files">
+      <UniqueIdentifier>{f311ba58-75eb-4cf6-94de-6930ab782f76}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="main.cpp">
@@ -39,23 +42,23 @@
     <ClCompile Include="GameObject2D.cpp">
       <Filter>Engine</Filter>
     </ClCompile>
-    <ClCompile Include="GameObject.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="Player.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="Bullet.cpp">
-      <Filter>Source Files</Filter>
+    <ClCompile Include="Animation.cpp">
+      <Filter>Class files</Filter>
     </ClCompile>
     <ClCompile Include="Astroid.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="Animation.cpp">
-      <Filter>Source Files</Filter>
+      <Filter>Class files</Filter>
     </ClCompile>
     <ClCompile Include="EnemyUFO.cpp">
-      <Filter>Source Files</Filter>
+      <Filter>Class files</Filter>
+    </ClCompile>
+    <ClCompile Include="Bullet.cpp">
+      <Filter>Class files</Filter>
+    </ClCompile>
+    <ClCompile Include="GameObject.cpp">
+      <Filter>Class files</Filter>
+    </ClCompile>
+    <ClCompile Include="Player.cpp">
+      <Filter>Class files</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>

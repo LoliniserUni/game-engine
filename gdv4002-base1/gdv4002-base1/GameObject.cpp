@@ -29,7 +29,7 @@ bool GameObject::checkColl(GameObject object) {
 
 	float distance = xDist * xDist + yDist * yDist;
 
-	return (distance < checkSize);
+	return (distance < checkSize + object.getCheckSize());
 
 	// Return true if the distance between the 2 points is smaller than this objects size (ie, the passed objects centre is within this objects size)
 	//return (xDif < size.x / 2.0f && yDif < size.y / 2.0f);
