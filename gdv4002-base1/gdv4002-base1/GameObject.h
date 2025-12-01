@@ -1,5 +1,3 @@
-#pragma once
-
 #include "GameObject2D.h"
 #include "GraphicsCore.h"
 #include <glm/glm.hpp>
@@ -7,13 +5,13 @@
 #ifndef GAME_OBJECT_H_
 #define GAME_OBJECT_H_
 
+static const float PI = 3.141593f;
 class GameObject : public GameObject2D
 {
 protected:
 	// Variables
-	const float PI = 3.141593f;
 	float checkSize;
-	float maxSpeed = 10.0f;
+	int maxSpeed = 200;
 	glm::vec2 velocity = glm::vec2(0.0f, 0.0f);
 	float rotSpeed = glm::radians(420.0f);
 	float mass = 1.0f;
@@ -29,6 +27,7 @@ public:
 	GameObject(GameObject2D* object);
 
 	glm::vec2 getVel();
+
 	// Functions
 	float getCheckSize();
 	void updateVel(double tDelta);

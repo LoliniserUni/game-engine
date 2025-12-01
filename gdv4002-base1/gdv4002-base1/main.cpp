@@ -188,7 +188,7 @@ int main(void) {
 	//
 	// Setup game scene objects here
 	//
-
+	
 	// seting the viewplane width and height variables
 	width = getViewplaneWidth();
 	height = getViewplaneHeight();

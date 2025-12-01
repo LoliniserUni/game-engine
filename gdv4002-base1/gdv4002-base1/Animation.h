@@ -1,10 +1,10 @@
 #pragma once
-#include "GameObject.h"
+#include "GameObject2D.h"
 
 #ifndef Animation_H_
 #define Animation_H_
 
-class Animation : public GameObject
+class Animation : public GameObject2D
 {
 private:
 	// Variables

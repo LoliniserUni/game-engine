@@ -17,16 +17,16 @@ GameObject::GameObject(glm::vec2 pos, float ori, int textID, glm::vec2 siz) : Ga
 	velocity = glm::vec2(0, 0);
 };
 
-GameObject::GameObject(glm::vec2 pos, float ori, int textID, glm::vec2 siz, float mass) : GameObject(pos, ori, textID, siz) {
-	this->mass = mass;
+GameObject::GameObject() : GameObject2D() {
+	checkSize = 0;
+}
 
-	velocity = glm::vec2(0, 0);
-}
-glm::vec2 GameObject::getVel() {
-	return velocity;
-}
 float GameObject::getCheckSize() {
 	return checkSize;
+}
+
+glm::vec2 GameObject::getVel() {
+	return velocity;
 }
 
 //Functions
@@ -45,32 +45,9 @@ bool GameObject::checkColl(GameObject* object, float tDelta) {
 
 	float distance = xDist * xDist + yDist * yDist;
 
-	bool res = distance < checkSize + object->getCheckSize();
+	float newCheckSize = checkSize + object.getCheckSize() + checkSize / 2.0f;
 
-	if (res) {
-		glm::vec2 impactDirection = (object->getPos() - position);
-		impactDirection = glm::normalize(impactDirection);
-
-		glm::vec2 velocityDifference = velocity - object->getVel();
-
-		float dot = glm::dot(velocityDifference, velocityDifference);
-		glm::vec2 impactOffset = object->getMass() / mass * impactDirection * dot * tDelta;
-		if (glm::length(impactOffset) > 1000) {
-
-			// Normalize the velocity and * by the max speed
-			impactOffset = glm::normalize(impactOffset);
-			impactOffset *= 1000;
-
-		}
-
-		setVelocity((getVel() - impactOffset));
-		object->setVelocity((object->getVel() + impactOffset));
-	}
-
-	return res;
-
-	// Return true if the distance between the 2 points is smaller than this objects size (ie, the passed objects centre is within this objects size)
-	//return (xDif < size.x / 2.0f && yDif < size.y / 2.0f);
+	return (distance < newCheckSize);
 }
 
 void GameObject::setMass(float mass) {

@@ -1,12 +1,12 @@
 #include "Animation.h"
 // Constructors
-Animation::Animation() : GameObject() {
+Animation::Animation() : GameObject2D() {
 	this->textureIDs = nullptr;
 	totalFrames = 0;
 }
 
 // Constructor
-Animation::Animation(float ori, int* textureIDs, int totalFrames, glm::vec2 siz) : GameObject(glm::vec2(1000.0f, 1000.0f), ori, textureIDs[0], siz) {
+Animation::Animation(float ori, int* textureIDs, int totalFrames, glm::vec2 siz) : GameObject2D(glm::vec2(1000.0f, 1000.0f), ori, siz, textureIDs[0]){
 	this->textureIDs = textureIDs;
 	this->totalFrames = totalFrames;
 };
