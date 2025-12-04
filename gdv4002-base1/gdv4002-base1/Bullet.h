@@ -8,8 +8,6 @@
 class Bullet : public GameObject
 {
 private:
-	// Variables
-	float maxSpeed = 400.0f;
 
 public:
 	// Defualt constructor

@@ -52,7 +52,7 @@ Player* player2 = nullptr;
 
 bool wKey = false, aKey = false, sKey = false, dKey = false, spaceKey = false, leftShift = false;
 bool key8 = false, key4 = false, key5 = false, key6 = false, rightKey = false, downKey = false;
-const float forwardForce = 100.0f;
+const float forwardForce = 10000.0f;
 
 const float damageCoolDown = 1.0f;
 float cDamageTimer = 0;
@@ -197,6 +197,9 @@ int main(void) {
 
 	hideAxisLines();
 	//setting all the various textures 
+
+	std::cout << "loading textures" << std::endl;
+
 	playerTexture = loadTexture("Resources\\Textures\\player1_ship.png", TextureProperties::NearestFilterTexture());
 	playerTexture2 = loadTexture("Resources\\Textures\\player2_ship.png", TextureProperties::NearestFilterTexture());
 	bulletTexture = loadTexture("Resources\\Textures\\bullet.png", TextureProperties::NearestFilterTexture());
@@ -237,6 +240,9 @@ int main(void) {
 
 	int shieldIDText = loadTexture("Resources\\Textures\\shield.png", TextureProperties::NearestFilterTexture());
 
+
+	std::cout << "textures loaded" << std::endl;
+
 	GameObject2D* shield = new GameObject2D(glm::vec2(1000.0f, 1000.0f), 0,glm::vec2(15.0f,15.0f), shieldIDText);
 
 
@@ -248,10 +254,15 @@ int main(void) {
 	GameObject2D tC = GameObject2D(glm::vec2(1000.0f, 1000.0f), 0, glm::vec2(8.0f, 8.0f), cloverText);
 
 	healthUp.makeNew(GameObject(&tHU));
+	healthUp.setMass(0.000000001f);
 	shieldUp.makeNew(GameObject(&tSU));
+	shieldUp.setMass(0.000000001f);
 	fireRateUp.makeNew(GameObject(&tFR));
+	fireRateUp.setMass(0.000000001f);
 	trippleShot.makeNew(GameObject(&tTS));
+	trippleShot.setMass(0.000000001f);
 	clover.makeNew(GameObject(&tC));
+	clover.setMass(0.000000001f);
 	
 	GameObject2D hb = GameObject2D(glm::vec2(-width / 2.0f + 10.0f, height / 2.0f - 2.5f), 0.0f, glm::vec2(20, 5), healthTextIDs[4]);
 	GameObject2D hb2 = GameObject2D(glm::vec2(width / 2.0f - 10.0f, height / 2.0f - 2.5f), 0.0f, glm::vec2(20, 5), healthTextIDs[4]);
@@ -356,17 +367,64 @@ void updateAstroids(double tDelta) {
 	for (int ba = 0; ba < bigAstroidIndex; ba++) {
 		bigAstroidArr[ba].updateVel(tDelta);
 		bigAstroidArr[ba].keepOnScreen(width / 2.0f, height / 2.0f);
+
+		for (int ba2 = 0; ba2 < bigAstroidIndex; ba2++) {
+			if (ba2 != ba) {
+				if (bigAstroidArr[ba].checkColl(&bigAstroidArr[ba2], tDelta)) {
+					bigAstroidArr[ba].addHit();
+					bigAstroidArr[ba2].addHit();
+				}
+			}
+		}
+		for (int ma = 0; ma < medAstroidIndex; ma++) {
+			if (bigAstroidArr[ba].checkColl(&medAstroidArr[ma], tDelta)) {
+				bigAstroidArr[ba].addHit();
+				medAstroidArr[ma].addHit();
+			}
+		}
+
+		for (int sa = 0; sa < smallAstroidIndex; sa++) {
+			if (bigAstroidArr[ba].checkColl(&smallAstroidArr[sa], tDelta)) {
+				bigAstroidArr[ba].addHit();
+				smallAstroidArr[sa].addHit();
+			}
+		}
 	}
 
 
 	for (int ma = 0; ma < medAstroidIndex; ma++) {
 		medAstroidArr[ma].updateVel(tDelta);
 		medAstroidArr[ma].keepOnScreen(width / 2.0f, height / 2.0f);
+
+		for (int ma2 = 0; ma2 < medAstroidIndex; ma2++) {
+			if (ma != ma2) {
+				if (medAstroidArr[ma].checkColl(&medAstroidArr[ma2], tDelta)) {
+					medAstroidArr[ma].addHit();
+					medAstroidArr[ma2].addHit();
+				}
+			}
+		}
+		for (int sa = 0; sa < smallAstroidIndex; sa++) {
+			if (medAstroidArr[ma].checkColl(&smallAstroidArr[sa], tDelta)) {
+				medAstroidArr[ma].addHit();
+				smallAstroidArr[sa].addHit();
+			}
+		}
 	}
 
 	for (int sa = 0; sa < smallAstroidIndex; sa++) {
 		smallAstroidArr[sa].updateVel(tDelta);
 		smallAstroidArr[sa].keepOnScreen(width / 2.0f, height / 2.0f);
+
+		
+		for (int sa2 = 0; sa2 < smallAstroidIndex; sa2++) {
+			if (sa != sa2) {
+				if (smallAstroidArr[sa].checkColl(&smallAstroidArr[sa2], tDelta)) {
+					smallAstroidArr[sa].addHit();
+					smallAstroidArr[sa2].addHit();
+				}
+			}
+		}
 	}
 }
 
@@ -397,7 +455,7 @@ void updateBullets(double tDelta) {
 			
 
 			// If the bullet hit the UFO
-			if (UFO[ufo].checkColl(bullet[i])) {
+			if (UFO[ufo].checkColl(&bullet[i], tDelta)) {
 
 				// Get the position the hit happened
 				hitPos = UFO[ufo].getPos();
@@ -425,7 +483,7 @@ void updateBullets(double tDelta) {
 			if (hit) break;
 
 			// If the bullet hit the asteroid
-			if (bigAstroidArr[ba].checkColl(bullet[i])) {
+			if (bigAstroidArr[ba].checkColl(&bullet[i], tDelta)) {
 
 				// Hit occured
 				hit = true;
@@ -441,9 +499,8 @@ void updateBullets(double tDelta) {
 					spawnMedAstroid(tDelta, bigAstroidArr[ba].getPos());
 					spawnMedAstroid(tDelta, bigAstroidArr[ba].getPos());
 
-					// Reset the asteroids values, and move it off screen (this is so that the game engine doesnt leave a white block in the middle of my screen)
+					// Reset the asteroids values
 					bigAstroidArr[ba].makeNew(new Astroid());
-					bigAstroidArr[ba].getPos() = glm::vec2(1000.0f, 1000.0f);
 
 					// delete the asteroid
 					deleteFromAstroidArray(bigAstroidArr, ba, &bigAstroidIndex);
@@ -458,7 +515,7 @@ void updateBullets(double tDelta) {
 
 			if (hit) break;
 
-			if (medAstroidArr[ma].checkColl(bullet[i])) {
+			if (medAstroidArr[ma].checkColl(&bullet[i], tDelta)) {
 
 				hit = true;
 
@@ -473,7 +530,6 @@ void updateBullets(double tDelta) {
 					spawnSmallAstroid(tDelta, medAstroidArr[ma].getPos());
 
 					medAstroidArr[ma].makeNew(new Astroid());
-					medAstroidArr[ma].getPos() = glm::vec2(1000.0f, 1000.0f);
 
 					deleteFromAstroidArray(medAstroidArr, ma, &medAstroidIndex);
 
@@ -486,7 +542,7 @@ void updateBullets(double tDelta) {
 
 			if (hit) break;
 
-			if (smallAstroidArr[sa].checkColl(bullet[i])) {
+			if (smallAstroidArr[sa].checkColl(&bullet[i], tDelta)) {
 
 				hit = true;
 
@@ -497,7 +553,6 @@ void updateBullets(double tDelta) {
 					score += 1;
 
 					smallAstroidArr[sa].makeNew(new Astroid());
-					smallAstroidArr[sa].getPos() = glm::vec2(1000.0f, 1000.0f);
 
 					deleteFromAstroidArray(smallAstroidArr, sa, &smallAstroidIndex);
 
@@ -603,7 +658,7 @@ void ufoUpdateBullets(double tDelta) {
 		}
 
 		// Check if the bullet hit the player
-		if (enemyBullet[i].checkColl(player)) {
+		if (enemyBullet[i].checkColl(player, tDelta)) {
 
 			// If it did, reduce player health
 			if (player->reduceHealth()) {
@@ -774,14 +829,14 @@ void checkPlayerHB(double tDelta) {
 
 	if (healthUp.getPos().x < 100.0f) {
 		// Check the players colision on power ups
-		if (healthUp.checkColl(player)) {
+		if (healthUp.checkColl(player, tDelta)) {
 			// If its a hit, move the power up out of bounds
 			healthUp.setPos(glm::vec2(1000.0f, 1000.0f));
 
 			// Add health to the player
 			player->addHealth();
 		}
-		if (healthUp.checkColl(player2)) {
+		if (healthUp.checkColl(player2, tDelta)) {
 			// If its a hit, move the power up out of bounds
 			healthUp.setPos(glm::vec2(1000.0f, 1000.0f));
 
@@ -792,7 +847,7 @@ void checkPlayerHB(double tDelta) {
 
 	if (clover.getPos().x < 100.0f) {
 		// Check the players colision on power ups
-		if (clover.checkColl(player)) {
+		if (clover.checkColl(player, tDelta)) {
 
 			spawnPUp(&fireRateUp, clover.getPos());
 			spawnPUp(&trippleShot, clover.getPos());
@@ -801,7 +856,7 @@ void checkPlayerHB(double tDelta) {
 
 			clover.setPos(glm::vec2(1000.0f, 1000.0f));
 		}
-		if (clover.checkColl(player2)) {
+		if (clover.checkColl(player2, tDelta)) {
 
 			spawnPUp(&fireRateUp, clover.getPos());
 			spawnPUp(&trippleShot, clover.getPos());
@@ -813,7 +868,7 @@ void checkPlayerHB(double tDelta) {
 	}
 
 	if (trippleShot.getPos().x < 100.0f) {
-		if (trippleShot.checkColl(player)) {
+		if (trippleShot.checkColl(player, tDelta)) {
 			trippleShot.setPos(glm::vec2(1000.0f,100.0f));
 
 
@@ -822,7 +877,7 @@ void checkPlayerHB(double tDelta) {
 			hasTrippleShot = true;
 		}
 
-		if (trippleShot.checkColl(player2)) {
+		if (trippleShot.checkColl(player2, tDelta)) {
 			trippleShot.setPos(glm::vec2(1000.0f, 100.0f));
 
 
@@ -832,14 +887,14 @@ void checkPlayerHB(double tDelta) {
 		}
 	}
 	if (shieldUp.getPos().x < 100.0f) {
-		if (shieldUp.checkColl(player)) {
+		if (shieldUp.checkColl(player, tDelta)) {
 
 			shieldUp.setPos(glm::vec2(1000.0f, 1000.0f));
 
 			// Add a sheild to the player
 			player->addSheild();
 		}
-		if (shieldUp.checkColl(player2)) {
+		if (shieldUp.checkColl(player2, tDelta)) {
 
 			shieldUp.setPos(glm::vec2(1000.0f, 1000.0f));
 
@@ -849,14 +904,14 @@ void checkPlayerHB(double tDelta) {
 	}
 
 	if (fireRateUp.getPos().x < 100.0f) {
-		if (fireRateUp.checkColl(player)) {
+		if (fireRateUp.checkColl(player, tDelta)) {
 
 			fireRateUp.setPos(glm::vec2(1000.0f,1000.0f));
 
 			shotDelay = boostedDelay;
 			boostedDelayTimer = boostedShotLen;
 		}
-		if (fireRateUp.checkColl(player2)) {
+		if (fireRateUp.checkColl(player2, tDelta)) {
 
 			fireRateUp.setPos(glm::vec2(1000.0f, 1000.0f));
 
@@ -868,19 +923,9 @@ void checkPlayerHB(double tDelta) {
 	// Increment the damage cooldown
 	cDamageTimer2 += (float) tDelta;
 
-	// If the player is in itime (invincible time)
-	if (cDamageTimer2 < damageCoolDown) {
-		//do nothing
-		return;
-	}
+	
 	// Increment the damage cooldown
 	cDamageTimer += (float)tDelta;
-
-	// If the player is in itime (invincible time)
-	if (cDamageTimer < damageCoolDown) {
-		//do nothing
-		return;
-	}
 
 	// create boolean for a hit
 	bool hit = false;
@@ -892,21 +937,31 @@ void checkPlayerHB(double tDelta) {
 	for (int ufo = 0; ufo < ufoIndex; ufo++) {
 
 		// Check if the player hit it
-		if (UFO[ufo].checkColl(player)) {
+		if (player->checkColl(&UFO[ufo], tDelta)) {
 
 			hit = true;
 
-			// Reduce health from the ufo
-			UFO[ufo].reduceHealth();
+			// Reduce the UFOs healt
+			if (UFO[ufo].reduceHealth()) {
+
+				// If health == 0, delete the UFO.
+				deleteUFO(ufo);
+				score += 10;
+			}
 		}
 
 		// Check if the player hit it
-		if (UFO[ufo].checkColl(player2)) {
+		if (player2->checkColl(&UFO[ufo], tDelta)) {
 
 			hit2 = true;
 
-			// Reduce health from the ufo
-			UFO[ufo].reduceHealth();
+			// Reduce the UFOs healt
+			if (UFO[ufo].reduceHealth()) {
+
+				// If health == 0, delete the UFO.
+				deleteUFO(ufo);
+				score += 10;
+			}
 		}
 	}
 	for (int ba = 0; ba < bigAstroidIndex; ba++) {
@@ -914,18 +969,44 @@ void checkPlayerHB(double tDelta) {
 		// If somethings already been hit, skip
 		if (hit || hit2) break;
 
-		if (bigAstroidArr[ba].checkColl(player)) {
+		if (player->checkColl(&bigAstroidArr[ba], tDelta)) {
 
 			hit = true;
 
-			bigAstroidArr[ba].addHit();
+			// Reduce the asteroids health.
+			if (bigAstroidArr[ba].addHit()) {
+
+				score += 5;
+				//if health == 0; spawn spaller asteroids (only aplicable for big and med asteroids)
+				spawnMedAstroid(tDelta, bigAstroidArr[ba].getPos());
+				spawnMedAstroid(tDelta, bigAstroidArr[ba].getPos());
+
+				// Reset the asteroids values
+				bigAstroidArr[ba].makeNew(new Astroid());
+
+				// delete the asteroid
+				deleteFromAstroidArray(bigAstroidArr, ba, &bigAstroidIndex);
+			}
 		}
 
-		if (bigAstroidArr[ba].checkColl(player2)) {
+		if (player2->checkColl(&bigAstroidArr[ba], tDelta)) {
 
 			hit2 = true;
 
-			bigAstroidArr[ba].addHit();
+			// Reduce the asteroids health.
+			if (bigAstroidArr[ba].addHit()) {
+
+				score += 5;
+				//if health == 0; spawn spaller asteroids (only aplicable for big and med asteroids)
+				spawnMedAstroid(tDelta, bigAstroidArr[ba].getPos());
+				spawnMedAstroid(tDelta, bigAstroidArr[ba].getPos());
+
+				// Reset the asteroids values
+				bigAstroidArr[ba].makeNew(new Astroid());
+
+				// delete the asteroid
+				deleteFromAstroidArray(bigAstroidArr, ba, &bigAstroidIndex);
+			}
 		}
 	}
 
@@ -933,18 +1014,46 @@ void checkPlayerHB(double tDelta) {
 
 		if (hit || hit2) break;
 
-		if (medAstroidArr[ma].checkColl(player)) {
+		if (player->checkColl(&medAstroidArr[ma], tDelta)) {
 
 			hit = true;
 
-			medAstroidArr[ma].addHit();
+			// Reduce the asteroids health.
+			if (medAstroidArr[ma].addHit()) {
+
+				score += 5;
+				//if health == 0; spawn spaller asteroids (only aplicable for big and med asteroids)
+				spawnSmallAstroid(tDelta, medAstroidArr[ma].getPos());
+				spawnSmallAstroid(tDelta, medAstroidArr[ma].getPos());
+				spawnSmallAstroid(tDelta, medAstroidArr[ma].getPos());
+
+				// Reset the asteroids values
+				medAstroidArr[ma].makeNew(new Astroid());
+
+				// delete the asteroid
+				deleteFromAstroidArray(medAstroidArr, ma, &medAstroidIndex);
+			}
 		}
 
-		if (medAstroidArr[ma].checkColl(player2)) {
+		if (player2->checkColl(&medAstroidArr[ma], tDelta)) {
 
 			hit2 = true;
 
-			medAstroidArr[ma].addHit();
+			// Reduce the asteroids health.
+			if (medAstroidArr[ma].addHit()) {
+
+				score += 5;
+				//if health == 0; spawn spaller asteroids (only aplicable for big and med asteroids)
+				spawnSmallAstroid(tDelta, medAstroidArr[ma].getPos());
+				spawnSmallAstroid(tDelta, medAstroidArr[ma].getPos());
+				spawnSmallAstroid(tDelta, medAstroidArr[ma].getPos());
+
+				// Reset the asteroids values
+				medAstroidArr[ma].makeNew(new Astroid());
+
+				// delete the asteroid
+				deleteFromAstroidArray(medAstroidArr, ma, &medAstroidIndex);
+			}
 		}
 	}
 
@@ -952,18 +1061,47 @@ void checkPlayerHB(double tDelta) {
 
 		if (hit || hit2) break;
 
-		if (smallAstroidArr[sa].checkColl(player)) {
+		if (player->checkColl(&smallAstroidArr[sa], tDelta)) {
 
 			hit = true;
 
-			smallAstroidArr[sa].addHit();
+			// Reduce the asteroids health.
+			if (smallAstroidArr[sa].addHit()) {
+
+				score += 5;
+
+				// Reset the asteroids values
+				smallAstroidArr[sa].makeNew(new Astroid());
+
+				// delete the asteroid
+				deleteFromAstroidArray(smallAstroidArr, sa, &smallAstroidIndex);
+			}
 		}
-		if (smallAstroidArr[sa].checkColl(player2)) {
+		if (player2->checkColl(&smallAstroidArr[sa], tDelta)) {
 
 			hit2 = true;
 
-			smallAstroidArr[sa].addHit();
+			// Reduce the asteroids health.
+			if (smallAstroidArr[sa].addHit()) {
+
+				score += 5;
+
+				// Reset the asteroids values
+				smallAstroidArr[sa].makeNew(new Astroid());
+
+				// delete the asteroid
+				deleteFromAstroidArray(smallAstroidArr, sa, &smallAstroidIndex);
+			}
 		}
+	}
+	// If the player is in itime (invincible time)
+	if (cDamageTimer2 < damageCoolDown) {
+		//do nothing
+		return;
+	}
+	if (cDamageTimer < damageCoolDown) {
+		//do nothing
+		return;
 	}
 
 	// If the player has been hit
@@ -1731,6 +1869,9 @@ void myKeyboardHandler(GLFWwindow* window, int key, int scancode, int action, in
 			break;
 		case GLFW_KEY_DOWN:
 			downKey = true;
+			break;
+		case GLFW_KEY_P:
+			printf("stoppoint");
 			break;
 		default:
 		{

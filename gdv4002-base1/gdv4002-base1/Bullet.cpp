@@ -1,7 +1,15 @@
 #include "Bullet.h"
 // constructor
-Bullet::Bullet(glm::vec2 pos, float ori, int textID, glm::vec2 siz) : GameObject(pos, ori, textID, siz) {};
-Bullet::Bullet(GameObject2D* object) : GameObject(object) {}
+Bullet::Bullet(glm::vec2 pos, float ori, int textID, glm::vec2 siz) : GameObject(pos, ori, textID, siz) {
+
+	mass = 1;
+	maxSpeed = 400.0f;
+};
+Bullet::Bullet(GameObject2D* object) : GameObject(object) {
+
+	mass = 1;
+	maxSpeed = 400.0f;
+}
 
 //Function
 void Bullet::makeNew(GameObject object) {
@@ -11,6 +19,9 @@ void Bullet::makeNew(GameObject object) {
 	size = object.getSize();
 	textureID = object.getTexture();
 	checkSize = object.getCheckSize();
+
+	mass = 1;
+	maxSpeed = 400.0f;
 }
 
 void Bullet::makeNew(Bullet object) {
@@ -21,6 +32,9 @@ void Bullet::makeNew(Bullet object) {
 	textureID = object.textureID;
 	velocity = object.velocity;
 	checkSize = object.checkSize;
+
+	mass = 1;
+	maxSpeed = 400.0f;
 }
 
 bool Bullet::deleteOffScreen(float viewWidth, float viewHeight) {

@@ -13,16 +13,19 @@ protected:
 	// Variables
 	const float PI = 3.141593f;
 	float checkSize;
-	float maxSpeed = 200.0f;
+	float maxSpeed = 10.0f;
 	glm::vec2 velocity = glm::vec2(0.0f, 0.0f);
 	float rotSpeed = glm::radians(420.0f);
+	float mass = 1.0f;
 
 public:
 	// Default constructor
-	GameObject() : GameObject2D() {};
+	GameObject();
 
 	// Constructors
 	GameObject(glm::vec2 pos, float ori, int textID, glm::vec2 siz);
+
+	GameObject(glm::vec2 pos, float ori, int textID, glm::vec2 siz, float mass);
 	GameObject(GameObject2D* object);
 
 	glm::vec2 getVel();
@@ -32,8 +35,12 @@ public:
 	glm::vec2 getForwardVector();
 	void keepOnScreen(float height, float width);
 	void setVelocity(glm::vec2 dir, float speed);
+	void setVelocity(glm::vec2 vel);
+	void addVleocity(glm::vec2 dir, float mag, double tDelta);
+	float getMass();
 	void makeNew(GameObject object);
-	bool checkColl(GameObject object);
+	bool checkColl(GameObject* object, float tDelta);
+	void setMass(float mass);
 };
 
 #endif

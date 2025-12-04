@@ -4,12 +4,15 @@ Player::Player(glm::vec2 pos, float ori, int textID, glm::vec2 siz, GameObject2D
 	this->healthBar = healthBar;
 	this->healthTextures = healthTextures;
 	shield = shieldBubble;
+	maxSpeed = 200.0f;
+	mass = 100.0f;
 };
 
 Player::Player(GameObject2D* object) : GameObject(object) {
 	healthBar = new GameObject2D();
 	healthTextures = nullptr;
 	shield = nullptr;
+	mass = 100.0f;
 }
 
 void Player::update(double tDelta) {
@@ -41,24 +44,12 @@ void Player::turnRight(double tDelta) {
 
 void Player::addVelocity(glm::vec2 dir, float mag, double tDelta) {
 	if (!alive) return;
-	// Get the acceleartion in the applied direction, and * by the magnitude and the time delta
-	glm::vec2 accel = dir * (float)tDelta * mag;
-
-	// Add the acceleration to the velocity
-	velocity += accel;
-
-	// If the velocity is over the max speed
-	if (glm::length(velocity) > maxSpeed) {
-
-		// Normalize the velocity and * by the max speed
-		velocity = glm::normalize(velocity);
-		velocity *= maxSpeed;
-
-	}
+	
+	GameObject::addVleocity(dir, mag, tDelta);
 }
 
 GameObject Player::shoot(double tDelta, float speed, int texture, glm::vec2 size, Animation* lGun, Animation* rGun, float rotOffset) {
-	if (!alive) return GameObject();
+	if (!alive) return GameObject(glm::vec2(1000.0f,1000.0f), 0, 0, glm::vec2(0,0));
 
 	// Get the current position, and offset it forwards
 	float fX = 5 * cos(orientation) + position.x;
@@ -113,6 +104,7 @@ void Player::addHealth() {
 }
 
 bool Player::reduceHealth() {
+	return false;
 	// if the player has a sheild
 	if (hasShield) {
 		// remove the sheuld and set the correct health bar texture
