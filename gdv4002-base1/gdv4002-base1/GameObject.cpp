@@ -17,10 +17,6 @@ GameObject::GameObject(glm::vec2 pos, float ori, int textID, glm::vec2 siz) : Ga
 	velocity = glm::vec2(0, 0);
 };
 
-GameObject::GameObject() : GameObject2D() {
-	checkSize = 0;
-}
-
 float GameObject::getCheckSize() {
 	return checkSize;
 }
@@ -45,7 +41,7 @@ bool GameObject::checkColl(GameObject* object, float tDelta) {
 
 	float distance = xDist * xDist + yDist * yDist;
 
-	float newCheckSize = checkSize + object.getCheckSize() + checkSize / 2.0f;
+	float newCheckSize = checkSize + object->getCheckSize() + checkSize / 2.0f;
 
 	return (distance < newCheckSize);
 }

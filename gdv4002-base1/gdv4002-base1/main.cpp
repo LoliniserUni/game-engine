@@ -167,9 +167,6 @@ float fireRateTimer = 0.0f;
 float trippleShotTimer = 0.0f;
 float cloverDespawnTimer = 0.0f;
 
-// Other variables and consts
-const float PI = 3.141593f;
-
 // score counter
 int score;
 
@@ -797,10 +794,10 @@ void updateUps(double tDelta) {
 		// do nothing
 	}
 
-	if (hasTrippleShot2) {
-		trippleShotLen2 -= (float)tDelta;
-		if (trippleShotLen2 < 0) {
-			hasTrippleShot2 = false;
+	if (hasTrippleShot) {
+		trippleShotLen -= (float)tDelta;
+		if (trippleShotLen < 0) {
+			hasTrippleShot = false;
 		}
 	}
 
@@ -925,7 +922,7 @@ void checkPlayerHB(double tDelta) {
 
 	
 	// Increment the damage cooldown
-	cDamageTimer += (float)tDelta;
+	cDamageTimer += (float) tDelta;
 
 	// create boolean for a hit
 	bool hit = false;
@@ -1094,38 +1091,31 @@ void checkPlayerHB(double tDelta) {
 			}
 		}
 	}
-	// If the player is in itime (invincible time)
-	if (cDamageTimer2 < damageCoolDown) {
-		//do nothing
-		return;
-	}
-	if (cDamageTimer < damageCoolDown) {
-		//do nothing
-		return;
-	}
 
 	// If the player has been hit
 	if (hit) {
+		if (cDamageTimer > damageCoolDown) {
+			// Reset the damage cool down timer.
+			cDamageTimer = 0.0f;
 
-		// Reset the damage cool down timer.
-		cDamageTimer = 0.0f;
-
-		// If player health = 0;
-		if (player->reduceHealth()) {
+			// If player health = 0;
+			if (player->reduceHealth()) {
 
 
+			}
 		}
 	}
 
 	if (hit2) {
+		if (cDamageTimer2 > damageCoolDown) {
+			// Reset the damage cool down timer.
+			cDamageTimer2 = 0.0f;
 
-		// Reset the damage cool down timer.
-		cDamageTimer2 = 0.0f;
-
-		// If player health = 0;
-		if (player2->reduceHealth()) {
+			// If player health = 0;
+			if (player2->reduceHealth()) {
 
 
+			}
 		}
 	}
 
@@ -1471,7 +1461,7 @@ void playerControl(double tDelta) {
 	shotTimer2 += (float)tDelta;
 
 	// Decide if the player can shoot or not
-	if (shotTimer2 > shotDelay) {
+	if (shotTimer2 > shotDelay2) {
 		canShoot2 = true;
 	}
 
@@ -1544,7 +1534,7 @@ void clearScene() {
 void fullReset() {
 	player->alive = true;
 	player2->alive = true;
-	std::cout << "Your final score was: " << score;
+	std::cout << "Your final score was: " << score << std::endl;
 
 	score = 0;
 	// Reset level 

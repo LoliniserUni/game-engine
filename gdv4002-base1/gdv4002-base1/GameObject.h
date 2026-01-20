@@ -5,7 +5,9 @@
 #ifndef GAME_OBJECT_H_
 #define GAME_OBJECT_H_
 
-static const float PI = 3.141593f;
+
+const float PI = 3.141593f;
+
 class GameObject : public GameObject2D
 {
 protected:

@@ -104,7 +104,6 @@ void Player::addHealth() {
 }
 
 bool Player::reduceHealth() {
-	return false;
 	// if the player has a sheild
 	if (hasShield) {
 		// remove the sheuld and set the correct health bar texture
